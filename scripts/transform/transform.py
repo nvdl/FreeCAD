@@ -15,7 +15,7 @@
 *   It adds temporary bounding boxes and center marks before moving       *
 *   the objects and removes them after the translation is complete.       *
 *                                                                         *
-*   Supports:                                                             *
+*   It supports:                                                          *
 *   - Translation of a single, multiple or a group (FreeCAD group)        *
 *     of objects.                                                         *
 *   - Snapping to center and origin marks (after adding them).            *
