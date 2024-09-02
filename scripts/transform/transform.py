@@ -5,7 +5,6 @@
 ***************************************************************************
 *                                                                         *
 *   Author: Naveed Alam.                                                  *
-*   Date: 28th of August, 2024                                            *
 *   Email: naveedguy ayt gmail dot com                                    *
 *   License: https://github.com/FreeCAD/FreeCAD/blob/main/LICENSE         *
 *                                                                         *
@@ -40,11 +39,7 @@
 ***************************************************************************
 '''
 # ==================================================================================================
-import os
-import sys
 from dataclasses import dataclass
-from importlib import import_module
-from traceback import format_exc
 
 from PySide.QtGui import *
 from PySide.QtCore import *
@@ -55,8 +50,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.0"
-__date__ = "28/08/2024"
+__version__ = "2.1"
+__date__ = "02/09/2024"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 0.21"
 __Status__ = "stable"
@@ -773,7 +768,6 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-
         MainWindow.resize(460, 480)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -807,28 +801,28 @@ class Ui_MainWindow(object):
         self.btnResetTransforms.setStyleSheet(u"")
         self.sldTranslateX = QSlider(self.tab)
         self.sldTranslateX.setObjectName(u"sldTranslateX")
-        self.sldTranslateX.setGeometry(QRect(60, 0, 310, 40))
+        self.sldTranslateX.setGeometry(QRect(50, 0, 300, 40))
         self.sldTranslateX.setMinimum(-50)
         self.sldTranslateX.setMaximum(50)
         self.sldTranslateX.setPageStep(1)
         self.sldTranslateX.setOrientation(Qt.Horizontal)
         self.sldTranslateY = QSlider(self.tab)
         self.sldTranslateY.setObjectName(u"sldTranslateY")
-        self.sldTranslateY.setGeometry(QRect(60, 30, 310, 40))
+        self.sldTranslateY.setGeometry(QRect(50, 30, 300, 40))
         self.sldTranslateY.setMinimum(-50)
         self.sldTranslateY.setMaximum(50)
         self.sldTranslateY.setPageStep(1)
         self.sldTranslateY.setOrientation(Qt.Horizontal)
         self.sldTranslateZ = QSlider(self.tab)
         self.sldTranslateZ.setObjectName(u"sldTranslateZ")
-        self.sldTranslateZ.setGeometry(QRect(60, 60, 310, 40))
+        self.sldTranslateZ.setGeometry(QRect(50, 60, 300, 40))
         self.sldTranslateZ.setMinimum(-50)
         self.sldTranslateZ.setMaximum(50)
         self.sldTranslateZ.setPageStep(1)
         self.sldTranslateZ.setOrientation(Qt.Horizontal)
         self.sldTranslateDelta = QSlider(self.tab)
         self.sldTranslateDelta.setObjectName(u"sldTranslateDelta")
-        self.sldTranslateDelta.setGeometry(QRect(60, 90, 310, 40))
+        self.sldTranslateDelta.setGeometry(QRect(50, 90, 300, 40))
         self.sldTranslateDelta.setMinimum(-9)
         self.sldTranslateDelta.setMaximum(9)
         self.sldTranslateDelta.setPageStep(1)
@@ -850,16 +844,20 @@ class Ui_MainWindow(object):
         self.lblStep.setGeometry(QRect(10, 100, 40, 20))
         self.lblTranslateX = QLabel(self.tab)
         self.lblTranslateX.setObjectName(u"lblTranslateX")
-        self.lblTranslateX.setGeometry(QRect(390, 10, 60, 20))
+        self.lblTranslateX.setGeometry(QRect(360, 10, 100, 20))
+        self.lblTranslateX.setAlignment(Qt.AlignCenter)
         self.lblTranslateZ = QLabel(self.tab)
         self.lblTranslateZ.setObjectName(u"lblTranslateZ")
-        self.lblTranslateZ.setGeometry(QRect(390, 70, 60, 20))
+        self.lblTranslateZ.setGeometry(QRect(360, 70, 100, 20))
+        self.lblTranslateZ.setAlignment(Qt.AlignCenter)
         self.lblTranslateY = QLabel(self.tab)
         self.lblTranslateY.setObjectName(u"lblTranslateY")
-        self.lblTranslateY.setGeometry(QRect(390, 40, 60, 20))
+        self.lblTranslateY.setGeometry(QRect(360, 40, 100, 20))
+        self.lblTranslateY.setAlignment(Qt.AlignCenter)
         self.lblTranslateDelta = QLabel(self.tab)
         self.lblTranslateDelta.setObjectName(u"lblTranslateDelta")
-        self.lblTranslateDelta.setGeometry(QRect(390, 100, 60, 20))
+        self.lblTranslateDelta.setGeometry(QRect(360, 100, 100, 20))
+        self.lblTranslateDelta.setAlignment(Qt.AlignCenter)
         self.btnAddDimensionZ = QPushButton(self.tab)
         self.btnAddDimensionZ.setObjectName(u"btnAddDimensionZ")
         self.btnAddDimensionZ.setEnabled(True)
@@ -907,14 +905,15 @@ class Ui_MainWindow(object):
         self.chkAutoRecompute.setChecked(True)
         self.sldSnapDistance = QSlider(self.tab)
         self.sldSnapDistance.setObjectName(u"sldSnapDistance")
-        self.sldSnapDistance.setGeometry(QRect(60, 120, 310, 40))
+        self.sldSnapDistance.setGeometry(QRect(50, 120, 300, 40))
         self.sldSnapDistance.setMinimum(-9)
         self.sldSnapDistance.setMaximum(9)
         self.sldSnapDistance.setPageStep(1)
         self.sldSnapDistance.setOrientation(Qt.Horizontal)
         self.lblSnapDistance = QLabel(self.tab)
         self.lblSnapDistance.setObjectName(u"lblSnapDistance")
-        self.lblSnapDistance.setGeometry(QRect(390, 130, 60, 20))
+        self.lblSnapDistance.setGeometry(QRect(360, 130, 100, 20))
+        self.lblSnapDistance.setAlignment(Qt.AlignCenter)
         self.lblSnap = QLabel(self.tab)
         self.lblSnap.setObjectName(u"lblSnap")
         self.lblSnap.setGeometry(QRect(10, 130, 40, 20))
@@ -996,10 +995,8 @@ class Ui_MainWindow(object):
         self.btnAddDimensionY.setText(QCoreApplication.translate("MainWindow", u"Add Dimension Y", None))
         self.btnAddDimensionX.setText(QCoreApplication.translate("MainWindow", u"Add Dimension X", None))
         self.btnToggleOriginMark.setText(QCoreApplication.translate("MainWindow", u"Toggle Origin Mark", None))
-
         self.tabMain.setTabText(self.tabMain.indexOf(self.tab),
                                 QCoreApplication.translate("MainWindow", u"Transform", None))
 # ===========================================================================
-FreeCADRootWindow = Gui.getMainWindow()
 macroWindow = MacroWindow()
 # ===========================================================================
