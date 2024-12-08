@@ -500,7 +500,7 @@ class MacroWindow(QMainWindow):
 
         self.ui.statusBar.clearMessage()
 
-        self.getSelectedObjects(extended=False)
+        self.selectedObjsParams = self.getSelectedObjects(extended=False)
 
         for objParam in self.selectedObjsParams:
             objParam.object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(App.Vector(0, 0, 0), 0))
