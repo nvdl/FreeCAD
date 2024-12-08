@@ -50,7 +50,7 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.1"
+__version__ = "2.2"
 __date__ = "02/09/2024"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 0.21"
