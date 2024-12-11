@@ -50,8 +50,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.2"
-__date__ = "08/12/2024"
+__version__ = "2.3"
+__date__ = "11/12/2024"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 0.21"
 __Status__ = "stable"
@@ -69,6 +69,7 @@ class ObjectParameters:
     object: "Part::Feature"
     base: "FreeCAD.Vector"
     center: "FreeCAD.Vector"
+    lineColor: tuple[float]
     boundingBoxEnabled: bool
 # ==================================================================================================
 class MacroWindow(QMainWindow):
@@ -145,6 +146,8 @@ class MacroWindow(QMainWindow):
 
         self.transformActive = False
 
+        self.centerLines: list = []
+
         self.axisXTranslation = self.axisYTranslation = self.axisZTranslation = 0
 
         self.deltaTranslation = float(10 ** self.ui.sldTranslateDelta.value())
@@ -159,6 +162,8 @@ class MacroWindow(QMainWindow):
 
         self.snapLineColor = (0.0, 1.0, 1.0, 0.0)
         self.snapLineWidth = 4
+
+        self.highlightLineColor = (1.0, 0.0, 0.0, 0.0)
 
         self.axesMarkerLineLength = 500
 
@@ -199,6 +204,17 @@ class MacroWindow(QMainWindow):
         self.snapDistance = float(10 ** self.ui.sldSnapDistance.value())
         self.updateTranslationLabels()
 # ==================================================================================================
+    def getObjectsParameters(self, objects):
+
+        objsParams = [ObjectParameters(obj,
+                                       obj.Placement.Base,
+                                       self.getCenter(obj),
+                                       obj.ViewObject.LineColor,
+                                       obj.ViewObject.BoundingBox)
+                      for obj in objects]
+
+        return objsParams
+# ==================================================================================================
     def getSelectedObjects(self, extended=False) -> list[ObjectParameters]:
 
         if extended:
@@ -229,11 +245,7 @@ class MacroWindow(QMainWindow):
                 else:
                     App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
 
-        selObjs = [ObjectParameters(obj,
-                                    obj.Placement.Base,
-                                    self.getCenter(obj),
-                                    obj.ViewObject.BoundingBox)
-                   for obj in objs]
+        selObjs = self.getObjectsParameters(objs)
 
         return selObjs
 # ==================================================================================================
@@ -244,9 +256,12 @@ class MacroWindow(QMainWindow):
         self.selectedObjsParams = self.getSelectedObjects(extended=True)
         self.selectedObjsParams += self.getSelectedObjects(extended=False)
 
-        if self.ui.chkBoundingBoxes.isChecked():
-            for objParams in self.selectedObjsParams:
+        for objParams in self.selectedObjsParams:
+            if self.ui.chkBoundingBoxes.isChecked():
                 objParams.object.ViewObject.BoundingBox = True
+
+            if self.ui.chkHighlight.isChecked():
+                objParams.object.ViewObject.LineColor = self.highlightLineColor
 
         self.centerLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
         self.centerLinesParams += self.getGroupObjects(self.GROUP_LABEL_ORIGIN_LINES)
@@ -419,11 +434,7 @@ class MacroWindow(QMainWindow):
             else:
                 App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
 
-        groupObjs = [ObjectParameters(obj,
-                                      obj.Placement.Base,
-                                      self.getCenter(obj),
-                                      obj.ViewObject.BoundingBox)
-                     for obj in objs]
+        groupObjs = self.getObjectsParameters(objs)
 
         return groupObjs
 # ==================================================================================================
@@ -473,10 +484,14 @@ class MacroWindow(QMainWindow):
         if not prevTransform:
             return
 
-        # Restore the status of bounding boxes.
-        if self.ui.chkBoundingBoxes.isChecked():
-            for objParams in self.selectedObjsParams:
+        for objParams in self.selectedObjsParams:
+            if self.ui.chkBoundingBoxes.isChecked():
+                # Restore the status of bounding boxes.
                 objParams.object.ViewObject.BoundingBox = objParams.boundingBoxEnabled
+
+            if self.ui.chkHighlight.isChecked():
+                # Restore the line colors.
+                objParams.object.ViewObject.LineColor = objParams.lineColor
 
         if self.drawStyleRevertAction is not None:
             self.drawStyleRevertAction.trigger()
@@ -532,12 +547,7 @@ class MacroWindow(QMainWindow):
             self.updateTranslationLabels()
             return
 
-        for i in range(len(self.selectedObjsParams)):
-            obj = self.selectedObjsParams[i].object
-
-            # Use the base as a reference before moving started (updated when the slider is released).
-            base = self.selectedObjsParams[i].base
-
+        for objParams in self.selectedObjsParams:
             self.axisXTranslation = x * self.deltaTranslation
             self.axisYTranslation = y * self.deltaTranslation
             self.axisZTranslation = z * self.deltaTranslation
@@ -545,12 +555,16 @@ class MacroWindow(QMainWindow):
             if self.ui.chkSnap.isChecked():
                 self.checkSnapping()
 
+            # Use the base as a reference before moving started (updated when the slider is released).
+            base = objParams.base
+
             newX = base.x + self.axisXTranslation
             newY = base.y + self.axisYTranslation
             newZ = base.z + self.axisZTranslation
 
             newBase = FreeCAD.Vector(newX, newY, newZ)
 
+            obj = objParams.object
             obj.Placement.Base = newBase
 
             if self.ui.chkAutoUpdateView.isChecked():
@@ -563,9 +577,9 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def checkSnapping(self) -> None:
 
-        self.axisXTranslation2 = self.axisXTranslation
-        self.axisYTranslation2 = self.axisYTranslation
-        self.axisZTranslation2 = self.axisZTranslation
+        axisXTranslation2 = self.axisXTranslation
+        axisYTranslation2 = self.axisYTranslation
+        axisZTranslation2 = self.axisZTranslation
 
         for objParams in self.selectedObjsParams:
             # Use the center as a reference before moving starts (updated when the slider is released).
@@ -594,7 +608,7 @@ class MacroWindow(QMainWindow):
                             labelCL.startswith(self.LINE_CENTER_Z_LABEL_PREFIX):
                         xdiff = float(lineCL.X1) - newCenterX
                         if abs(xdiff) <= self.snapDistance:
-                            self.axisXTranslation2 += xdiff
+                            axisXTranslation2 += xdiff
                             snapped = True
 
                 elif abs(self.axisYTranslation) > 0:
@@ -602,7 +616,7 @@ class MacroWindow(QMainWindow):
                             labelCL.startswith(self.LINE_CENTER_Z_LABEL_PREFIX):
                         ydiff = float(lineCL.Y1) - newCenterY
                         if abs(ydiff) <= self.snapDistance:
-                            self.axisYTranslation2 += ydiff
+                            axisYTranslation2 += ydiff
                             snapped = True
 
                 elif abs(self.axisZTranslation) > 0:
@@ -610,22 +624,22 @@ class MacroWindow(QMainWindow):
                             labelCL.startswith(self.LINE_CENTER_Y_LABEL_PREFIX):
                         zdiff = float(lineCL.Z1) - newCenterZ
                         if abs(zdiff) <= self.snapDistance:
-                            self.axisZTranslation2 += zdiff
+                            axisZTranslation2 += zdiff
                             snapped = True
 
                 if snapped:
                     break
 
             if snapped:
-                message = f"\"{objParams.object.Label}\" snapped to reference line \"{labelCL}\"."
-                self.ui.statusBar.showMessage(message)
-
                 lineCL.ViewObject.LineColor = self.snapLineColor
                 lineCL.ViewObject.LineWidth = self.snapLineWidth
 
-                self.axisXTranslation = self.axisXTranslation2
-                self.axisYTranslation = self.axisYTranslation2
-                self.axisZTranslation = self.axisZTranslation2
+                self.axisXTranslation = axisXTranslation2
+                self.axisYTranslation = axisYTranslation2
+                self.axisZTranslation = axisZTranslation2
+
+                message = f"\"{objParams.object.Label}\" snapped to reference line \"{labelCL}\"."
+                self.ui.statusBar.showMessage(message)
 
                 break
 # ==================================================================================================
@@ -673,6 +687,9 @@ class MacroWindow(QMainWindow):
             return
 
         dimensionType = str(self.sender().objectName())[-1:]
+
+        assert p1 is not None
+        assert p2 is not None
 
         if dimensionType == "X":
             p2 = FreeCAD.Vector(p2.x, p1.y, p1.z)
@@ -757,7 +774,7 @@ class MacroWindow(QMainWindow):
 # ===========================================================================
     def getAllCenters(self) -> list["FreeCAD.Vector"]:
 
-        centers = []
+        centers: list["FreeCAD.Vector"] = []
 
         for objParams in self.selectedObjsParams:
             centers.append(self.getCenter(objParams.object))
@@ -885,7 +902,6 @@ class Ui_MainWindow(object):
         self.chkSnap = QCheckBox(self.tab)
         self.chkSnap.setObjectName(u"chkSnap")
         self.chkSnap.setGeometry(QRect(10, 370, 180, 30))
-        self.chkSnap.setChecked(True)
         self.btnDefaultLineColor = QPushButton(self.tab)
         self.btnDefaultLineColor.setObjectName(u"btnDefaultLineColor")
         self.btnDefaultLineColor.setEnabled(True)
@@ -894,14 +910,13 @@ class Ui_MainWindow(object):
         self.btnDefaultLineColor.setStyleSheet(u"")
         self.chkCenterMarks = QCheckBox(self.tab)
         self.chkCenterMarks.setObjectName(u"chkCenterMarks")
-        self.chkCenterMarks.setGeometry(QRect(160, 340, 180, 30))
-        self.chkCenterMarks.setChecked(True)
+        self.chkCenterMarks.setGeometry(QRect(160, 340, 200, 30))
         self.chkAutoUpdateView = QCheckBox(self.tab)
         self.chkAutoUpdateView.setObjectName(u"chkAutoUpdateView")
         self.chkAutoUpdateView.setGeometry(QRect(10, 400, 180, 30))
         self.chkAutoRecompute = QCheckBox(self.tab)
         self.chkAutoRecompute.setObjectName(u"chkAutoRecompute")
-        self.chkAutoRecompute.setGeometry(QRect(160, 370, 180, 30))
+        self.chkAutoRecompute.setGeometry(QRect(160, 400, 200, 30))
         self.chkAutoRecompute.setChecked(True)
         self.sldSnapDistance = QSlider(self.tab)
         self.sldSnapDistance.setObjectName(u"sldSnapDistance")
@@ -919,8 +934,7 @@ class Ui_MainWindow(object):
         self.lblSnap.setGeometry(QRect(10, 130, 40, 20))
         self.chkBoundingBoxes = QCheckBox(self.tab)
         self.chkBoundingBoxes.setObjectName(u"chkBoundingBoxes")
-        self.chkBoundingBoxes.setGeometry(QRect(160, 310, 180, 30))
-        self.chkBoundingBoxes.setChecked(True)
+        self.chkBoundingBoxes.setGeometry(QRect(160, 310, 200, 30))
         self.chkAlwaysOnTop = QCheckBox(self.tab)
         self.chkAlwaysOnTop.setObjectName(u"chkAlwaysOnTop")
         self.chkAlwaysOnTop.setGeometry(QRect(10, 310, 180, 30))
@@ -942,6 +956,10 @@ class Ui_MainWindow(object):
         self.btnToggleOriginMark.setGeometry(QRect(160, 210, 140, 40))
         self.btnToggleOriginMark.setMinimumSize(QSize(0, 0))
         self.btnToggleOriginMark.setStyleSheet(u"")
+        self.chkHighlight = QCheckBox(self.tab)
+        self.chkHighlight.setObjectName(u"chkHighlight")
+        self.chkHighlight.setGeometry(QRect(160, 370, 200, 30))
+        self.chkHighlight.setChecked(True)
         self.tabMain.addTab(self.tab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusBar = QStatusBar(MainWindow)
@@ -995,6 +1013,7 @@ class Ui_MainWindow(object):
         self.btnAddDimensionY.setText(QCoreApplication.translate("MainWindow", u"Add Dimension Y", None))
         self.btnAddDimensionX.setText(QCoreApplication.translate("MainWindow", u"Add Dimension X", None))
         self.btnToggleOriginMark.setText(QCoreApplication.translate("MainWindow", u"Toggle Origin Mark", None))
+        self.chkHighlight.setText(QCoreApplication.translate("MainWindow", u"Highlight when moving", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tab),
                                 QCoreApplication.translate("MainWindow", u"Transform", None))
 # ===========================================================================
