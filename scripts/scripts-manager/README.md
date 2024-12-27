@@ -9,6 +9,7 @@ script named "custom_script.py".
 The main script, "custom_script.py", should contain a class as       
 below:                                                               
                                                                      
+```
 class CustomScript():                                                
     def __init__(self, parent, modulePath) -> None:                  
         self.parent = parent                                         
@@ -17,6 +18,7 @@ class CustomScript():
         // Code to run.                                              
     def about(self) -> str:                                          
         // Helpful information about the script.                     
+```
 
 # Screenshots
 ![screenshot-1](doc/images/screenshot-1.png?raw=true "Screenshot 1")
