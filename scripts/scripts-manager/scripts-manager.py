@@ -180,7 +180,7 @@ class MacroWindow(QMainWindow):
             else:
                 aboutStr = "No information available."
 
-            self.messageBox(f"Script: {name}", aboutStr)
+            self.messageBoxInformation(f"Script: {name}", aboutStr)
 # ==============================================================================
     def btnClearFilterClicked(self):
 
@@ -217,7 +217,7 @@ class MacroWindow(QMainWindow):
             self.ui.btnRunScript.setStyleSheet("")
             self.ui.btnRunScript.repaint()
         else:
-            self.messageBox(f"Script: {name}", "\"CustomScript\" class has no \"run\" function.")
+            self.messageBoxInformation(f"Script: {name}", "\"CustomScript\" class has no \"run\" function.")
 # ==============================================================================
     def getScript(self, name):
 
