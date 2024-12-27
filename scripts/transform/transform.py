@@ -1,8 +1,9 @@
 '''
 ***************************************************************************
 *                                                                         *
-*   Author: Naveed Alam.                                                  *
-*   Email: naveedguy ayt gmail dot com                                    *
+*   Author:  Naveed Alam.                                                 *
+*   Email:   naveedguy ayt gmail dot com                                  *
+*   Source:  https://github.com/nvdl/FreeCAD                              *
 *   License: https://github.com/FreeCAD/FreeCAD/blob/main/LICENSE         *
 *                                                                         *
 ***************************************************************************
