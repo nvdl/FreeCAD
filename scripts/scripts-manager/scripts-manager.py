@@ -284,6 +284,12 @@ class MacroWindow(QMainWindow):
 
         return (text, status)
 # ==============================================================================
+    def fileSaveDialog(self, title: str, filters: str):
+
+        fName, selectedFilter = QFileDialog.getSaveFileName(self, title, "", filters)
+
+        return (fName, selectedFilter)
+# ==============================================================================
     def statusMessage(self, message) -> None:
 
         if message != "":
