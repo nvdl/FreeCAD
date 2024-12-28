@@ -59,6 +59,7 @@ __Comment__ = "This macro allows for translating selected object(s) or group(s) 
 __url__ = "http://www.freecadweb.org/"
 __Web__ = "http://www.freecadweb.org/"
 __Wiki__ = "http://www.freecadweb.org/wiki/"
+__License__ = "LGPL-2.0-or-later"
 __Icon__ = ""
 __IconW__ = ""
 __Help__ = ""

@@ -65,6 +65,7 @@ __Comment__ = "This macro manages other scripts."
 __url__ = "http://www.freecadweb.org/"
 __Web__ = "http://www.freecadweb.org/"
 __Wiki__ = "http://www.freecadweb.org/wiki/"
+__License__ = "LGPL-2.0-or-later"
 __Icon__ = ""
 __IconW__ = ""
 __Help__ = ""
@@ -143,7 +144,7 @@ class MacroWindow(QMainWindow):
 
         self.ui.txtAbout.setText("Right click, copy the URL and paste it into your browser "
                                  "to access the Git repository.<br><br>"
-                                 "<a href=\"https://github.com/nvdl/FreeCAD\" >https://github.com/nvdl/FreeCAD</a>")
+                                 "<a href=\"https://github.com/nvdl/FreeCAD\">https://github.com/nvdl/FreeCAD</a>")
 
         self.ui.txtAbout.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
 
