@@ -73,8 +73,8 @@ class CustomScript():
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = ("Move objects to a group (set group label of objects) using the saved label of selection.\n"
-                    "Use the selection script to choose the label of the target group.")
+        aboutStr = ("Move objects to a group using the saved label.\n"
+                    "Use the selection script to choose/save the label of the target group.")
 
         return aboutStr
 # ==============================================================================

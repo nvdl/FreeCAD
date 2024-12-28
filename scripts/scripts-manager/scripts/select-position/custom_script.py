@@ -45,7 +45,7 @@ class CustomScript():
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = "Get placement (position and rotation) of an object and save it."
+        aboutStr = "Get placement (position and rotation) of an object and save it so that another script can access it."
 
         return aboutStr
 # ==============================================================================

@@ -45,7 +45,7 @@ class CustomScript():
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = "Get label of the first item in the selection and save it."
+        aboutStr = "Get label of the first item in the selection and save it so that another script can access it."
 
         return aboutStr
 # ==============================================================================
