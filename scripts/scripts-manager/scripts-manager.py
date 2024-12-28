@@ -214,8 +214,6 @@ class MacroWindow(QMainWindow):
 
             importedScript.run()
 
-            # self.ui.statusBar.showMessage(f"Done: \"{name}\"")
-
             self.ui.btnRunScript.setStyleSheet("")
             self.ui.btnRunScript.repaint()
         else:
@@ -262,23 +260,29 @@ class MacroWindow(QMainWindow):
 
         return ret
 # ==============================================================================
-    def messageBoxInformation(self, title, message) -> None:
+    def messageBoxInformation(self, title: str, message: str) -> None:
 
         QMessageBox.information(self, title, message, QMessageBox.Ok)
 # ==============================================================================
-    def messageBoxWarning(self, title, message) -> None:
+    def messageBoxWarning(self, title: str, message: str) -> None:
 
         QMessageBox.warning(self, title, message, QMessageBox.Ok)
 # ==============================================================================
-    def messageBoxCritical(self, title, message) -> None:
+    def messageBoxCritical(self, title: str, message: str) -> None:
 
         QMessageBox.critical(self, title, message, QMessageBox.Ok)
 # ==============================================================================
-    def messageBoxYesNo(self, title, message) -> bool:
+    def messageBoxYesNo(self, title: str, message: str) -> bool:
 
         ret = (QMessageBox.question(self, title, message, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes)
 
         return ret
+# ==============================================================================
+    def inputDialog(self, title: str, message: str):
+
+        text, status = QInputDialog.getText(self, title, message)
+
+        return (text, status)
 # ==============================================================================
     def statusMessage(self, message) -> None:
 
