@@ -50,8 +50,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.4"
-__date__ = "14/12/2024"
+__version__ = "2.5"
+__date__ = "29/12/2024"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 0.21"
 __Status__ = "stable"
@@ -67,11 +67,12 @@ __Help__ = ""
 @dataclass
 class ObjectParameters:
     """Class to represent a design object's parameters."""
+
     object: "Part::Feature"
     base: "FreeCAD.Vector"
     center: "FreeCAD.Vector"
-    lineColor: tuple[float]
-    boundingBoxEnabled: bool
+    lineColor: tuple[float] | None
+    boundingBoxEnabled: bool | None
 # ==================================================================================================
 class MacroWindow(QMainWindow):
 
@@ -217,8 +218,8 @@ class MacroWindow(QMainWindow):
         objsParams = [ObjectParameters(obj,
                                        obj.Placement.Base,
                                        self.getCenter(obj),
-                                       obj.ViewObject.LineColor,
-                                       obj.ViewObject.BoundingBox)
+                                       obj.ViewObject.LineColor if hasattr(obj.ViewObject, "LineColor") else None,
+                                       obj.ViewObject.BoundingBox if hasattr(obj.ViewObject, "BoundingBox") else None)
                       for obj in objects]
 
         return objsParams
@@ -232,23 +233,26 @@ class MacroWindow(QMainWindow):
 
         objs = []
 
-        allowedTypeIds = ["Part", "Mesh", "Image"]
+        allowedTypeIdsPartial = ["Part", "Mesh", "Image"]
+        allowedTypeIdsFull = ["App::Part"]
 
         for obj in objs2:
+            # App.Console.PrintMessage(f"Type ID: \"{obj.TypeId}\".\n")
+
             if extended:
                 obj = obj.Object
 
             if obj.TypeId == "App::DocumentObjectGroup":
                 for subObj in obj.Group:
                     try:
-                        if subObj.TypeId.split("::")[0] in allowedTypeIds:
+                        if subObj.TypeId in allowedTypeIdsFull or subObj.TypeId.split("::")[0] in allowedTypeIdsPartial:
                             objs.append(subObj)
                         else:
                             App.Console.PrintMessage(f"Not selecting \"{subObj.Label}\".\n")
                     except:
                         App.Console.PrintMessage(f"Exception; cannot select \"{subObj.Label}\".\n")
             else:
-                if obj.TypeId.split("::")[0] in allowedTypeIds:
+                if obj.TypeId in allowedTypeIdsFull or obj.TypeId.split("::")[0] in allowedTypeIdsPartial:
                     objs.append(obj)
                 else:
                     App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
@@ -262,13 +266,18 @@ class MacroWindow(QMainWindow):
         self.centerLines = []
 
         self.selectedObjsParams = self.getSelectedObjects(extended=True)
-        self.selectedObjsParams += self.getSelectedObjects(extended=False)
+
+        objs = self.getSelectedObjects(extended=False)
+
+        for obj in objs:
+            if obj not in self.selectedObjsParams:
+                self.selectedObjsParams.append(obj)
 
         for objParams in self.selectedObjsParams:
-            if self.ui.chkBoundingBoxes.isChecked():
+            if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
                 objParams.object.ViewObject.BoundingBox = True
 
-            if self.ui.chkHighlight.isChecked():
+            if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
                 objParams.object.ViewObject.LineColor = self.highlightLineColor
 
         self.centerLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
@@ -493,11 +502,11 @@ class MacroWindow(QMainWindow):
             return
 
         for objParams in self.selectedObjsParams:
-            if self.ui.chkBoundingBoxes.isChecked():
+            if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
                 # Restore the status of bounding boxes.
                 objParams.object.ViewObject.BoundingBox = objParams.boundingBoxEnabled
 
-            if self.ui.chkHighlight.isChecked():
+            if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
                 # Restore the line colors.
                 objParams.object.ViewObject.LineColor = objParams.lineColor
 
@@ -518,6 +527,8 @@ class MacroWindow(QMainWindow):
 
         if self.ui.chkAutoRecompute.isChecked():
             App.ActiveDocument.recompute()
+
+        self.ui.statusBar.clearMessage()
 # ==================================================================================================
     def btnResetTransformsClicked(self) -> None:
 
@@ -540,11 +551,16 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def translateSelection(self, x, y, z) -> None:
 
-        self.ui.statusBar.clearMessage()
-
         if len(self.selectedObjsParams) == 0:
             self.ui.statusBar.showMessage("Nothing selected.")
             return
+
+        if len(self.selectedObjsParams) == 1:
+            objLabel = self.selectedObjsParams[0].object.Label
+            self.ui.statusBar.showMessage(f"Translating \"{objLabel}\".")
+        else:
+            objsCount = len(self.selectedObjsParams)
+            self.ui.statusBar.showMessage(f"Translating {objsCount} objects.")
 
         if not self.transformActive:
             self.ui.sldTranslateX.setValue(0)
