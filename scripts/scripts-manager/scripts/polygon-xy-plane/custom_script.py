@@ -47,6 +47,10 @@ class CustomScript():
         pattern = r"\(\s*(\d+)\s*,\s*(\d+)\s*\)"
         matches = re.findall(pattern=pattern, string=text)
 
+        if len(matches) < 2:
+            self.parent.messageBoxCritical(self.modulePath, "No enough vertices specified in the input string.")
+            return
+
         polygonVertices = []
 
         for match in matches:
@@ -59,10 +63,13 @@ class CustomScript():
         polygon = activeDocument.addObject("Part::Polygon", self.modulePath.replace(".", "_"))
         polygon.Nodes = polygonVertices
 
-        if self.parent.messageBoxYesNo(self.modulePath, "Close the polygon?"):
-            polygon.Close = True
-        else:
-            polygon.Close = False
+        closePolygon = False
+
+        if len(matches) > 2:
+            if self.parent.messageBoxYesNo(self.modulePath, "Close the polygon?"):
+                closePolygon = True
+
+        polygon.Close = closePolygon
 
         activeDocument.recompute()
 # ==============================================================================
