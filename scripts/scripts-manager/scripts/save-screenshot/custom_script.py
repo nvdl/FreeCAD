@@ -50,7 +50,8 @@ class CustomScript():
 
         fName, selectedFilter = self.parent.fileSaveDialog("Please specify the destination file.", filters)
 
-        activeView.saveImage("/home/nvd/temp/fc.png", sizex, sizey, backgroundColor)
+        if fName != "":
+            activeView.saveImage(fName, sizex, sizey, backgroundColor)
 # ==============================================================================
     def about(self) -> str:
 
