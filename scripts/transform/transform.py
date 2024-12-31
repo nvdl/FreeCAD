@@ -263,6 +263,8 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def sldPressed(self) -> None:
 
+        App.ActiveDocument.openTransaction()
+
         self.centerLines = []
 
         self.selectedObjsParams = self.getSelectedObjects(extended=True)
@@ -527,6 +529,8 @@ class MacroWindow(QMainWindow):
 
         if self.ui.chkAutoRecompute.isChecked():
             App.ActiveDocument.recompute()
+
+        App.ActiveDocument.commitTransaction()
 
         self.ui.statusBar.clearMessage()
 # ==================================================================================================
