@@ -1,7 +1,7 @@
 '''
 ***************************************************************************
 *                                                                         *
-*   Author:  Naveed Alam.                                                 *
+*   Author:  Naveed Alam                                                  *
 *   Email:   naveedguy ayt gmail dot com                                  *
 *   Source:  https://github.com/nvdl/FreeCAD                              *
 *   License: https://github.com/FreeCAD/FreeCAD/blob/main/LICENSE         *
@@ -59,7 +59,7 @@ __title__ = "Scripts Manager"
 __version__ = "1.0"
 __date__ = "27/12/2024"
 __author__ = "Naveed Alam"
-__Requires__ = "Freecad 0.21"
+__Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
 __Comment__ = "This macro manages other scripts."
 __url__ = "http://www.freecadweb.org/"

@@ -1,7 +1,7 @@
 '''
 ***************************************************************************
 *                                                                         *
-*   Author:  Naveed Alam.                                                 *
+*   Author:  Naveed Alam                                                  *
 *   Email:   naveedguy ayt gmail dot com                                  *
 *   Source:  https://github.com/nvdl/FreeCAD                              *
 *   License: https://github.com/FreeCAD/FreeCAD/blob/main/LICENSE         *
@@ -53,7 +53,7 @@ __title__ = "Transform"
 __version__ = "2.5"
 __date__ = "29/12/2024"
 __author__ = "Naveed Alam"
-__Requires__ = "Freecad 0.21"
+__Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
 __Comment__ = "This macro allows for translating selected object(s) or group(s) of objects."
 __url__ = "http://www.freecadweb.org/"
