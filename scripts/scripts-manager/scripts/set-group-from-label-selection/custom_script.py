@@ -56,8 +56,11 @@ class CustomScript():
 
         groups = FreeCAD.ActiveDocument.getObjectsByLabel(label)
 
-        if len(groups) > 0:
-            group = groups[0]
+        if len(groups) == 0:
+            self.parent.statusMessage("No group found.")
+            return
+
+        group = groups[0]
 
         if type(group) != FreeCAD.DocumentObjectGroup:
             self.parent.statusMessage("Selection is not a group of objects.")

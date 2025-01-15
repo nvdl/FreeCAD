@@ -24,7 +24,6 @@
 ***************************************************************************
 '''
 import FreeCADGui
-from PySide2.QtWidgets import *
 # ==============================================================================
 class CustomScript():
 
@@ -55,7 +54,7 @@ class CustomScript():
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = "Take a screenshot of the current view and save that as a file."
+        aboutStr = "Take a screenshot of the current view and save that."
 
         return aboutStr
 # ==============================================================================

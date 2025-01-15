@@ -24,18 +24,53 @@
 ***************************************************************************
 '''
 import FreeCAD
-import FreeCADGui
 # ==============================================================================
-def getSelection(extended):
+class CustomScript():
 
-    if extended:
-        selObjs = FreeCADGui.Selection.getSelectionEx()
-    else:
-        selObjs = FreeCADGui.Selection.getSelection()
+    def __init__(self, parent, modulePath) -> None:
 
-    return selObjs
+        self.parent = parent
+        self.modulePath = modulePath
+        self.common = self.parent.getModule(modulePath="common", name="common", relative=False)
 # ==============================================================================
-def getAllObjects():
+    def run(self) -> None:
 
-    return FreeCAD.ActiveDocument.Objects
+        self.parent.statusMessage(f"Running \"{self.modulePath}\"")
+
+        selObjs = self.common.getSelection(extended=False)
+
+        if len(selObjs) == 0:
+            self.parent.statusMessage("Nothing selected.")
+            return
+
+        groups = [selObj for selObj in selObjs if type(selObj) == FreeCAD.DocumentObjectGroup]
+
+        if len(groups) == 0:
+            self.parent.statusMessage("No group selected.")
+            return
+
+        elif len(groups) > 1:
+            self.parent.statusMessage("More than one groups selected.")
+            return
+
+        else:
+            group = groups[0]
+
+        selObjs = [selObj for selObj in selObjs if selObj is not group]
+
+        if len(selObjs) == 0:
+            self.parent.statusMessage("No object selected.")
+            return
+
+        for selObj in selObjs:
+            group.addObject(selObj)
+
+        self.parent.statusMessage(f"Done \"{self.modulePath}\"")
+# ==============================================================================
+    def about(self) -> str:
+
+        aboutStr = ("Move objects to a group using the selection.\n"
+                    "Select objects and a group to move the objects into the group.")
+
+        return aboutStr
 # ==============================================================================
