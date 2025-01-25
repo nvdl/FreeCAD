@@ -54,10 +54,11 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 
 import FreeCAD
+import FreeCADGui
 # ==============================================================================
 __title__ = "Scripts Manager"
-__version__ = "1.0"
-__date__ = "27/12/2024"
+__version__ = "1.1"
+__date__ = "25/01/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -72,9 +73,9 @@ __Help__ = ""
 # ==============================================================================
 class MacroWindow(QMainWindow):
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent) -> None:
 
-        QMainWindow.__init__(self, parent)
+        super(MacroWindow, self).__init__(parent)
 
         scriptDir = os.path.dirname(os.path.realpath(__file__))
         # self.consoleMessage(f"{scriptDir=}\n")
@@ -290,6 +291,36 @@ class MacroWindow(QMainWindow):
 
         return (fName, selectedFilter)
 # ==============================================================================
+    def colorDialog(self, initialColor: tuple[float, float, float]) -> tuple[float, float, float, bool]:
+
+        status = True
+
+        r = int(initialColor[0] * 255)
+        g = int(initialColor[1] * 255)
+        b = int(initialColor[2] * 255)
+
+        color = QColorDialog.getColor(QColor(r, g, b), None)
+
+        r = color.red()
+        g = color.green()
+        b = color.blue()
+
+        # TODO: Look at the return status. There is a way to check a canceled dialog.
+        if r == g == b == 0:
+            status = False
+
+        return (r, g, b, status)
+# ==============================================================================
+    def optionsDialog(self, mode, options) -> tuple[list[str], bool]:
+
+        winOptions = WindowOptions(self, mode, options)
+
+        while winOptions.isVisible():
+            QApplication.instance().processEvents()
+            QThread.msleep(50)
+
+        return winOptions.options()
+# ==============================================================================
     def statusMessage(self, message) -> None:
 
         if message != "":
@@ -399,5 +430,89 @@ class Ui_MainWindow(object):
         self.tabMain.setTabText(self.tabMain.indexOf(self.tabAbout),
                                 QCoreApplication.translate("MainWindow", u"About", None))
 # ==============================================================================
-macroWindow = MacroWindow()
+class WindowOptions(QMainWindow):
+
+    def __init__(self, parent: QMainWindow, mode, options) -> None:
+
+        super(WindowOptions, self).__init__(parent)
+
+        winWidth = parent.width()
+        winHeight = parent.height()
+
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(sizePolicy)
+        self.setMinimumSize(QSize(winWidth, winHeight))
+        self.setMaximumSize(QSize(winWidth, winHeight))
+        # self.resize(winWidth, winHeight)
+
+        self.move(parent.pos().x() - (winWidth + 10), parent.pos().y())
+
+        if mode == "single":
+            self.setWindowTitle("Please Select One Option")
+        elif mode == "multiple":
+            self.setWindowTitle("Please Select One Or More Options")
+        else:
+            assert False, "Wrong mode."
+
+        self.lstOptions = QListWidget(self)
+        self.lstOptions.resize(280, 410)
+        self.lstOptions.move(10, 10)
+        self.lstOptions.itemDoubleClicked.connect(self.listItemDoubleClicked)
+        self.lstOptions.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        if mode == "single":
+            self.lstOptions.setSelectionMode(QAbstractItemView.SingleSelection)
+        elif mode == "multiple":
+            self.lstOptions.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        else:
+            assert False, "Wrong mode."
+
+        self.btnOK = QPushButton("OK", self)
+        self.btnOK.resize(135, 40)
+        self.btnOK.move(10, 430)
+        self.btnOK.clicked.connect(self.btnOKClicked)
+
+        self.btnCancel = QPushButton("Cancel", self)
+        self.btnCancel.resize(135, 40)
+        self.btnCancel.move(155, 430)
+        self.btnCancel.clicked.connect(self.btnCancelClicked)
+
+        for option in options:
+            self.lstOptions.addItem(option)
+
+        self.optionsSelected: list[str] = []
+        self.statusSelection = False
+
+        self.show()
+# ==============================================================================
+    def listItemDoubleClicked(self, item) -> None:
+
+        self.optionsSelected = self.selectedItems()
+        self.statusSelection = True
+
+        self.hide()
+# ==============================================================================
+    def btnOKClicked(self):
+
+        self.optionsSelected = self.selectedItems()
+        self.statusSelection = True
+
+        self.hide()
+# ==============================================================================
+    def btnCancelClicked(self):
+
+        self.hide()
+# ==============================================================================
+    def selectedItems(self):
+
+        return [item.text() for item in self.lstOptions.selectedItems()]
+# ==============================================================================
+    def options(self) -> tuple[list[str], bool]:
+
+        return self.optionsSelected, self.statusSelection
+# ==============================================================================
+macroWindow = MacroWindow(FreeCADGui.getMainWindow())
 # ==============================================================================
