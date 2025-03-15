@@ -42,6 +42,7 @@ class CustomScript():
             self.modulePath, "Please enter the vertices in \"(x1,y1)(x2,y2)(xn,yn)\" format.")
 
         if not status or text == "":
+            self.parent.statusMessage("Cancelled or empty input.")
             return
 
         pattern = r"\(\s*(\d+)\s*,\s*(\d+)\s*\)"
