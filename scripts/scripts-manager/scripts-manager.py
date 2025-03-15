@@ -57,8 +57,8 @@ import FreeCAD
 import FreeCADGui
 # ==============================================================================
 __title__ = "Scripts Manager"
-__version__ = "1.1"
-__date__ = "25/01/2025"
+__version__ = "1.2"
+__date__ = "15/03/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -92,12 +92,14 @@ class MacroWindow(QMainWindow):
         self.setWindowTitle(f"{__title__} v{__version__}")
 
         self.importedScripts = {}
+
         self.scriptsData: dict[str, str] = {}
 
         for path in pathlib.Path(scriptsDir).iterdir():
             if path.is_dir():
                 pathName = path.name
 
+                # Skip directories starting with special characters.
                 if pathName[0] in [".", "_"]:
                     continue
 
@@ -127,12 +129,16 @@ class MacroWindow(QMainWindow):
 
                     if hasattr(importedModule, "CustomScript"):
                         self.importedScripts[pathName] = (importedModule, modulePath)
-                        self.ui.lstScripts.addItem(pathName)
                     else:
                         self.consoleError(f"{importedModule} has no \"CustomScript\" class.\n")
                 else:
                     # self.consoleMessage(f"\"{modulePath}\" not found.\n")
                     pass
+
+        self.importedScripts = dict(sorted(self.importedScripts.items()))
+
+        for pathName in self.importedScripts:
+            self.ui.lstScripts.addItem(pathName)
 
         self.ui.chkAlwaysOnTop.clicked.connect(self.chkAlwaysOnTopClicked)
 
