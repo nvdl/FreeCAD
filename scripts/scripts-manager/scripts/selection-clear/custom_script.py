@@ -37,6 +37,8 @@ class CustomScript():
         self.parent.statusMessage(f"Running \"{self.modulePath}\".")
 
         FreeCADGui.Selection.clearSelection()
+
+        self.parent.statusMessage(f"Done \"{self.modulePath}\".")
 # ==============================================================================
     def about(self) -> str:
 
