@@ -324,6 +324,10 @@ class CustomScript():
 
                 viewObj = obj.ViewObject
 
+                if (transparency < 0) and hasattr(viewObj, "Visibility"):
+                    viewObj.Visibility = False
+                    continue
+
                 viewObj.ShapeAppearance = FreeCAD.Material(DiffuseColor=colorDiffuse,
                                                            AmbientColor=colorAmbient,
                                                            SpecularColor=colorSpecular,

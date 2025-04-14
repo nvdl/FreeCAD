@@ -139,6 +139,14 @@ Paramaters are set based on the order of regexes in the settings file. Thus, use
 
 **".*"** regex will update all objects including objects with names containing **"-room-"** or **"-bathroom-"**.
 
+## Hiding objects
+Set the transparency to any negative value to hide the objects.
+All the other CSV parameters are ignored and not set for the objects.
+```
+.*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
+^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects starting with "hide-"
+```
+
 **"-room-|-bathroom-"** regex will override the values set by **".*"** only for objects with names containing
 **"-room-"** or **"-bathroom-"**.
 
