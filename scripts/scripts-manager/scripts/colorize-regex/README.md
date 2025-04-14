@@ -83,6 +83,7 @@ themeWireframe , cStrL , ${cWoodldGray}
 -room-|-bathroom- , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  , 100 # Rooms/baths
 -window-          , ${cLightGreen} , 333333 , ff0000 , 000000 , ${cWinL} , 2 , ${cBlack} , 2 , 100 , 50  # Windows
 -stairs-          , ${cWoodldGray} , 333333 , 000000 , 000000 , ${cStrL} , 2 , ${cBlack} , 2 , 20  , 0   # Stairs
+^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1  # Hide objects with labels starting with "hide-"
 ```
 
 ## Variables
@@ -144,7 +145,7 @@ Set the transparency to any negative value to hide the objects.
 All the other CSV parameters are ignored and not set for the objects.
 ```
 .*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
-^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects starting with "hide-"
+^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects with labels starting with "hide-"
 ```
 
 **"-room-|-bathroom-"** regex will override the values set by **".*"** only for objects with names containing
