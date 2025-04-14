@@ -143,6 +143,8 @@ Paramaters are set based on the order of regexes in the settings file. Thus, use
 ## Hiding objects
 Set the transparency to any negative value to hide the objects.
 All the other CSV parameters are ignored and not set for the objects.
+To make an object visible again, rename the object's label as not to match the regex and set it to visible (manually).
+This script doesn't make the objects visible automatically.
 ```
 .*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
 ^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects with labels starting with "hide-"
