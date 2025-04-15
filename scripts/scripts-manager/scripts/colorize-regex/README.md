@@ -112,7 +112,7 @@ themeDEF, col4, ${col0}    # A variable referring to another variable in global 
 themeDEF, col5, ${col-abc} # Not OK as "col-abc" is not in "themeDEF" or global scope
 ```
 
-### Multiple assignments to variables
+### Multiple assignments to variables (overriding a variable imported from another settings file)
 Variables retain the last assigned value.
 ```
 colA, ffffff
