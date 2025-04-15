@@ -1,5 +1,5 @@
 # About
-This macro sets the properties of view objects through regex.
+This macro sets the properties of view objects (of objects) through regex. Regex is used for filtering of the objects based on their labels.
 
 # Screenshots
 ![screenshot-1](doc/images/screenshot-1.png?raw=true "Screenshot 1")
@@ -18,28 +18,28 @@ Following properties can be set:
 - Transparency
 
 ## Settings file
-The settings file must have an extension of **".FCStdView"**.
+The settings file is a text file that must have an extension of **".FCStdView"**.
 If a FreeCAD file is **"model.FCStd"**, the settings file must be **"model.FCStdView"**.
 
 Each line in the settings file can be any of the following formats.
 
-## Format for importing another settings file
+## 1: Format for importing another settings file
 ```
 import "extra-settings.FCStdView" # Relative path
 import "/x/y/z/extra-settings.FCStdView" # Absolute path
 ```
 
-## Format for declaring a global variable
+## 2: Format for declaring a global variable
 ```
 cBlack, 000000
 ```
 
-## Format for declaring a theme variable
+## 3: Format for declaring a theme variable
 ```
 themeABC, cBlack, 000000
 ```
 
-## Format for declaring the regex and related parameters to apply on the objects
+## 4: Format for declaring the regex and related parameters to apply on the objects
 ```
 -room-|-bathroom- , ${cGray150} , 333333 , 000000 , 000000 , ${cL1} , 4 , ${cBlack} , 2 , 20 , 100 # Rooms/baths
 
@@ -140,6 +140,12 @@ Paramaters are set based on the order of regexes in the settings file. Thus, use
 
 **".*"** regex will update all objects including objects with names containing **"-room-"** or **"-bathroom-"**.
 
+Later, **"-room-|-bathroom-"** regex will override the values set by **".*"** only for objects with labels containing
+**"-room-"** or **"-bathroom-"**.
+
+Using **".*"** in the very beginning is not mandatory but can be used to set all objects' views to specific values
+before other regexes do the selective updates.
+
 ## Hiding objects
 Set the transparency to any negative value to hide the objects.
 All the other CSV parameters are ignored and not set for the objects.
@@ -149,9 +155,3 @@ This script doesn't make the objects visible automatically.
 .*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
 ^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects with labels starting with "hide-"
 ```
-
-**"-room-|-bathroom-"** regex will override the values set by **".*"** only for objects with names containing
-**"-room-"** or **"-bathroom-"**.
-
-Using **".*"** in the very beginning is not mandatory but can be used to set all objects' views to specific values
-before other regexes do the selective updates.
