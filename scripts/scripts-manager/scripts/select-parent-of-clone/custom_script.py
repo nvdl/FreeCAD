@@ -39,40 +39,34 @@ class CustomScript():
 
         selObjs = self.common.getSelection(False)
 
+        selObjs = [obj for obj in selObjs if (obj.TypeId == "Part::FeaturePython")
+                   and hasattr(obj, "Objects") and (len(obj.Objects) == 1)]
+
         if len(selObjs) == 0:
-            self.parent.statusMessage("Nothing selected.")
+            self.parent.statusMessage("No clone selected.")
             return
 
         if len(selObjs) > 1:
             self.parent.statusMessage("Please select only one object.")
             return
 
-        parentObj = selObjs[0]
-
-        clones = []
+        selObj = selObjs[0]
+        parentName = selObj.Objects[0].Name
 
         for obj in self.common.getAllObjects():
-            if (obj.TypeId == "Part::FeaturePython") and \
-                    hasattr(obj, "Objects") and \
-                    (len(obj.Objects) == 1) and \
-                    (obj.Objects[0].Name == parentObj.Name):
-                clones.append(obj)
-
-        if clones:
-            FreeCADGui.Selection.clearSelection()
-            FreeCADGui.Selection.addSelection(parentObj)
-
-            for clone in clones:
-                FreeCADGui.Selection.addSelection(clone)
-
-            self.parent.statusMessage(f"Found {len(clones)} clone(s).")
+            if obj.Name == parentName:
+                FreeCADGui.Selection.clearSelection()
+                FreeCADGui.Selection.addSelection(selObj)
+                FreeCADGui.Selection.addSelection(obj)
+                self.parent.statusMessage(f"Found \"{obj.Label}\" as the parent.")
+                break
         else:
-            self.parent.statusMessage("Found no clone(s).")
+            self.parent.statusMessage("Found no parent.")
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = ("Find all clones of an object and select them.\n"
-                    "The parent object also remains selected.")
+        aboutStr = ("Find parent of the clone and select it.\n"
+                    "The cloned object also remains selected.")
 
         return aboutStr
 # ==============================================================================
