@@ -54,7 +54,11 @@ class CustomScript():
             self.parent.statusMessage("Cancelled or empty input.")
             return
 
-        scales = list(map(float, text.split(",")))
+        try:
+            scales = list(map(float, text.split(",")))
+        except ValueError:
+            self.parent.statusMessage("Invalid input.")
+            return
 
         if (len(scales) != 3) or (0 in scales) or (math.inf in scales) or (-math.inf in scales):
             self.parent.statusMessage("Invalid input.")
