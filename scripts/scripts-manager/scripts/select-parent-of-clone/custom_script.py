@@ -39,8 +39,7 @@ class CustomScript():
 
         selObjs = self.common.getSelection(False)
 
-        selObjs = [obj for obj in selObjs if (obj.TypeId == "Part::FeaturePython")
-                   and hasattr(obj, "Objects") and (len(obj.Objects) == 1)]
+        selObjs = [obj for obj in selObjs if (obj.TypeId == "Part::FeaturePython") and hasattr(obj, "Objects")]
 
         if len(selObjs) == 0:
             self.parent.statusMessage("No clone selected.")
@@ -51,6 +50,15 @@ class CustomScript():
             return
 
         selObj = selObjs[0]
+
+        if len(selObj.Objects) == 0:
+            self.parent.statusMessage("Clone has no parent.")
+            return
+
+        if len(selObj.Objects) != 1:
+            self.parent.statusMessage("Clone has more than one parents.")
+            return
+
         parentName = selObj.Objects[0].Name
 
         for obj in self.common.getAllObjects():
