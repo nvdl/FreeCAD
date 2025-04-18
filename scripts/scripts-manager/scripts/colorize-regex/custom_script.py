@@ -25,6 +25,7 @@
 '''
 import os
 import re
+from colorsys import hsv_to_rgb
 from pathlib import Path
 
 import FreeCAD
@@ -351,13 +352,41 @@ class CustomScript():
 # ==============================================================================
     def strToColor(self, colorStr) -> tuple[int, int, int] | None:
 
-        if len(colorStr) != 6:
+        # HSV notation: "h/s/v".
+        if "/" in colorStr:
+            try:
+                fields = list(map(float, colorStr.split("/")))
+            except ValueError:
+                self.parent.messageBoxCritical(self.modulePath, f"Wrong color value \"{colorStr}\".")
+                return None
+
+            if len(fields) != 3:
+                self.parent.messageBoxCritical(self.modulePath, f"Wrong color value \"{colorStr}\".")
+                return None
+
+            h = fields[0]
+            s = fields[1]
+            v = fields[2]
+
+            if h < 0 or h > 100 or s < 0 or s > 100 or v < 0 or v > 100:
+                self.parent.messageBoxCritical(self.modulePath, f"Wrong color value \"{colorStr}\".")
+                return None
+
+            r, g, b = hsv_to_rgb(h / 100.0, s / 100.0, v / 100.0)
+
+            r = int(r * 255)
+            g = int(g * 255)
+            b = int(b * 255)
+
+        # RGB notation: "rrggbb".
+        elif len(colorStr) == 6:
+            r = int(colorStr[0:2], 16)
+            g = int(colorStr[2:4], 16)
+            b = int(colorStr[4:6], 16)
+
+        else:
             self.parent.messageBoxCritical(self.modulePath, f"Wrong color value \"{colorStr}\".")
             return None
-
-        r = int(colorStr[0:2], 16)
-        g = int(colorStr[2:4], 16)
-        b = int(colorStr[4:6], 16)
 
         return (r, g, b)
 # ==============================================================================

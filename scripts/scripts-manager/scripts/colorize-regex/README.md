@@ -155,3 +155,14 @@ This script doesn't make the objects visible automatically.
 .*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
 ^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects with labels starting with "hide-"
 ```
+
+## HSV notation
+Colors can also be specified using HSV values.
+The range for H, S and V is from 0.0 to 100.0.
+Each value is a floating point value.
+The notation is "H/S/V".
+```
+.*         , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0   # All objects
+-room-     , 10.1/20.2/30.3 , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  ,  100 # H: 10.1, S: 20.2, V: 30.3
+-bathroom- , 10/20/30       , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  ,  100 # H: 10, S: 20, V: 30
+```
