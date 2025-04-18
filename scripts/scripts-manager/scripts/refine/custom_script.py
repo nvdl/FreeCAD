@@ -56,8 +56,12 @@ class CustomScript():
         activeObj = FreeCAD.ActiveDocument.ActiveObject
 
         activeObj.Label = selObj.Label + "_refined"
-        activeObj.ViewObject.LineColor = selObj.ViewObject.LineColor
-        activeObj.ViewObject.ShapeColor = selObj.ViewObject.ShapeColor
+
+        if hasattr(selObj.ViewObject, "LineColor"):
+            activeObj.ViewObject.LineColor = selObj.ViewObject.LineColor
+
+        if hasattr(selObj.ViewObject, "ShapeColor"):
+            activeObj.ViewObject.ShapeColor = selObj.ViewObject.ShapeColor
 
         FreeCAD.ActiveDocument.recompute()
 # ==============================================================================
