@@ -61,6 +61,8 @@ class CustomScript():
 
         FreeCADGui.Selection.clearSelection()
 
+        foundCount = 0
+
         for obj in self.common.getAllObjects():
             if re.search(regexLabel, obj.Label) is None:
                 continue
@@ -69,8 +71,9 @@ class CustomScript():
                 continue
 
             FreeCADGui.Selection.addSelection(obj)
+            foundCount += 1
 
-        self.parent.statusMessage(f"Done \"{self.modulePath}\".")
+        self.parent.statusMessage(f"Found {foundCount} objects.")
 # ==============================================================================
     def about(self) -> str:
 
