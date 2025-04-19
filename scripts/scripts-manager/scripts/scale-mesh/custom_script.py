@@ -41,7 +41,7 @@ class CustomScript():
 
         objs = self.common.getSelection(False)
 
-        objs = [obj for obj in objs if obj.TypeId == "Mesh::Feature"]
+        objs = [obj for obj in objs if obj.TypeId.startswith("Mesh::")]
 
         if len(objs) == 0:
             self.parent.statusMessage("No mesh selected.")
