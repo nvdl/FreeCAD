@@ -48,7 +48,8 @@ class CustomScript():
             return
 
         text, status = self.parent.inputDialog(
-            self.modulePath, "Please enter the scales in \"scale-x,scale-y,scale-z\" format.")
+            self.modulePath,
+            "Please enter the scales in \"scale-x,scale-y,scale-z\" format or only one number for uniform scaling.")
 
         if not status or text == "":
             self.parent.statusMessage("Cancelled or empty input.")
@@ -60,12 +61,20 @@ class CustomScript():
             self.parent.statusMessage("Invalid input.")
             return
 
-        if (len(scales) != 3) or (0 in scales) or (math.inf in scales) or (-math.inf in scales):
+        if len(scales) not in [1, 3]:
+            self.parent.statusMessage("Invalid input.")
+            return
+
+        if (0 in scales) or (math.inf in scales) or (-math.inf in scales):
             self.parent.statusMessage("Invalid input.")
             return
 
         matrix = FreeCAD.Matrix()
-        matrix.scale(scales[0], scales[1], scales[2])
+
+        if len(scales) == 3:
+            matrix.scale(scales[0], scales[1], scales[2])
+        else:
+            matrix.scale(scales[0], scales[0], scales[0])
 
         FreeCAD.ActiveDocument.openTransaction()
 
