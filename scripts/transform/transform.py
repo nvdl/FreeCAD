@@ -234,7 +234,7 @@ class MacroWindow(QMainWindow):
         objs = []
 
         allowedTypeIdsPartial = ["Part", "Mesh", "Image"]
-        allowedTypeIdsFull = ["App::Part"]
+        allowedTypeIdsFull = ["App::Part", "App::Link"]
 
         for obj in objs2:
             # App.Console.PrintMessage(f"Type ID: \"{obj.TypeId}\".\n")
@@ -806,7 +806,7 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def getCenter(self, obj) -> "FreeCAD.Vector":
 
-        if obj.TypeId == "Mesh::Feature":
+        if obj.TypeId.startswith("Mesh::"):
             center = obj.Mesh.BoundBox.Center
         elif obj.TypeId == "Image::ImagePlane":
             center = obj.Placement.Base
