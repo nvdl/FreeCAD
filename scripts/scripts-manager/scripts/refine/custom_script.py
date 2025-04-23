@@ -60,8 +60,8 @@ class CustomScript():
         if hasattr(selObj.ViewObject, "LineColor"):
             activeObj.ViewObject.LineColor = selObj.ViewObject.LineColor
 
-        if hasattr(selObj.ViewObject, "ShapeColor"):
-            activeObj.ViewObject.ShapeColor = selObj.ViewObject.ShapeColor
+        if hasattr(selObj.ViewObject, "ShapeAppearance"):
+            activeObj.ViewObject.ShapeAppearance = selObj.ViewObject.ShapeAppearance
 
         FreeCAD.ActiveDocument.recompute()
 # ==============================================================================
