@@ -59,10 +59,10 @@ class CustomScript():
             self.parent.statusMessage("Clone has more than one parents.")
             return
 
-        parentName = selObj.Objects[0].Name
+        objParent = selObj.Objects[0]
 
         for obj in self.common.getAllObjects():
-            if obj.Name == parentName:
+            if obj is objParent:
                 FreeCADGui.Selection.clearSelection()
                 FreeCADGui.Selection.addSelection(selObj)
                 FreeCADGui.Selection.addSelection(obj)
@@ -74,7 +74,7 @@ class CustomScript():
     def about(self) -> str:
 
         aboutStr = ("Find parent of the clone and select it.\n"
-                    "The cloned object also remains selected.")
+                    "The clone also remains selected.")
 
         return aboutStr
 # ==============================================================================

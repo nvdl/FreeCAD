@@ -49,29 +49,23 @@ class CustomScript():
 
         parentObj = selObjs[0]
 
-        clones = []
+        links = [obj for obj in self.common.getAllObjects() if (obj.TypeId == "App::Link")
+                 and (obj.LinkedObject is parentObj)]
 
-        for obj in self.common.getAllObjects():
-            if (obj.TypeId == "Part::FeaturePython") and \
-                    hasattr(obj, "Objects") and \
-                    (len(obj.Objects) == 1) and \
-                    (obj.Objects[0] is parentObj):
-                clones.append(obj)
-
-        if clones:
+        if links:
             FreeCADGui.Selection.clearSelection()
             FreeCADGui.Selection.addSelection(parentObj)
 
-            for clone in clones:
-                FreeCADGui.Selection.addSelection(clone)
+            for link in links:
+                FreeCADGui.Selection.addSelection(link)
 
-            self.parent.statusMessage(f"Found {len(clones)} clone(s).")
+            self.parent.statusMessage(f"Found {len(links)} link(s).")
         else:
-            self.parent.statusMessage("Found no clone(s).")
+            self.parent.statusMessage("Found no link(s).")
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = ("Find all clones of an object and select them.\n"
+        aboutStr = ("Find all links of an object and select them.\n"
                     "The parent object also remains selected.")
 
         return aboutStr
