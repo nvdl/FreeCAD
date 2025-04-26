@@ -50,8 +50,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.5"
-__date__ = "29/12/2024"
+__version__ = "2.6"
+__date__ = "26/04/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -233,9 +233,6 @@ class MacroWindow(QMainWindow):
 
         objs = []
 
-        allowedTypeIdsPartial = ["Part", "Mesh", "Image"]
-        allowedTypeIdsFull = ["App::Part", "App::Link"]
-
         for obj in objs2:
             # App.Console.PrintMessage(f"Type ID: \"{obj.TypeId}\".\n")
 
@@ -245,14 +242,14 @@ class MacroWindow(QMainWindow):
             if obj.TypeId == "App::DocumentObjectGroup":
                 for subObj in obj.Group:
                     try:
-                        if subObj.TypeId in allowedTypeIdsFull or subObj.TypeId.split("::")[0] in allowedTypeIdsPartial:
+                        if hasattr(subObj, "Placement"):
                             objs.append(subObj)
                         else:
                             App.Console.PrintMessage(f"Not selecting \"{subObj.Label}\".\n")
                     except:
                         App.Console.PrintMessage(f"Exception; cannot select \"{subObj.Label}\".\n")
             else:
-                if obj.TypeId in allowedTypeIdsFull or obj.TypeId.split("::")[0] in allowedTypeIdsPartial:
+                if hasattr(obj, "Placement"):
                     objs.append(obj)
                 else:
                     App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
