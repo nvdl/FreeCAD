@@ -23,30 +23,20 @@
 *                                                                         *
 ***************************************************************************
 '''
+from PySide.QtGui import QMainWindow
 from PySide.QtWidgets import QTreeWidget
 
 import FreeCADGui
 # ==============================================================================
-class CustomScript():
+class MacroWindow(QMainWindow):
 
-    def __init__(self, parent, modulePath) -> None:
+    def __init__(self, parent) -> None:
 
-        self.parent = parent
-        self.modulePath = modulePath
-# ==============================================================================
-    def run(self) -> None:
-
-        self.parent.statusMessage(f"Running \"{self.modulePath}\"")
+        super(MacroWindow, self).__init__(parent)
 
         guiMainWindow = FreeCADGui.getMainWindow()
         trees = guiMainWindow.findChildren(QTreeWidget)
         trees[0].collapseAll()
-
-        self.parent.statusMessage(f"Done \"{self.modulePath}\"")
 # ==============================================================================
-    def about(self) -> str:
-
-        aboutStr = "Collapse the tree view of objects in the GUI."
-
-        return aboutStr
+macroWindow = MacroWindow(FreeCADGui.getMainWindow())
 # ==============================================================================

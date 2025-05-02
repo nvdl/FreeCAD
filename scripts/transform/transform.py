@@ -76,9 +76,9 @@ class ObjectParameters:
 # ==================================================================================================
 class MacroWindow(QMainWindow):
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent) -> None:
 
-        QMainWindow.__init__(self, parent)
+        super(MacroWindow, self).__init__(parent)
 
         self.GROUP_LABEL_CENTER_LINES = "lines_center"
         self.GROUP_LABEL_TEMP_CENTER_LINES = "lines_temp_center"
@@ -1083,5 +1083,5 @@ class Ui_MainWindow(object):
         self.tabMain.setTabText(self.tabMain.indexOf(self.tab_2),
                                 QCoreApplication.translate("MainWindow", u"View", None))
 # ===========================================================================
-macroWindow = MacroWindow()
+macroWindow = MacroWindow(FreeCADGui.getMainWindow())
 # ===========================================================================
