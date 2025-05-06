@@ -533,12 +533,19 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def btnResetTransformsClicked(self) -> None:
 
+        self.selectedObjsParams = self.getSelectedObjects(extended=False)
+
+        if len(self.selectedObjsParams) == 0:
+            return
+
         self.ui.statusBar.clearMessage()
 
-        self.selectedObjsParams = self.getSelectedObjects(extended=False)
+        App.ActiveDocument.openTransaction()
 
         for objParam in self.selectedObjsParams:
             objParam.object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(App.Vector(0, 0, 0), 0))
+
+        App.ActiveDocument.commitTransaction()
 
         App.ActiveDocument.recompute()
 # ==================================================================================================
