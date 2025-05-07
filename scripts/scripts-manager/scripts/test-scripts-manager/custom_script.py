@@ -51,6 +51,9 @@ class CustomScript():
         self.parent.messageBoxInformation(title="Information", message="Information")
         self.parent.messageBoxWarning(title="Warning", message="Warning")
         self.parent.messageBoxCritical(title="Critical", message="Critical")
+
+        retColor: tuple[float, float, float, bool] = self.parent.colorDialog(initialColor=(1, 1, 1))
+        self.parent.messageBoxInformation(title="Information", message=str(retColor))
 # ==============================================================================
     def about(self) -> str:
 

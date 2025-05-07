@@ -303,7 +303,7 @@ class MacroWindow(QMainWindow):
 # ==============================================================================
     def colorDialog(self, initialColor: tuple[float, float, float]) -> tuple[float, float, float, bool]:
 
-        status = True
+        status = False
 
         r = int(initialColor[0] * 255)
         g = int(initialColor[1] * 255)
@@ -311,13 +311,11 @@ class MacroWindow(QMainWindow):
 
         color = QColorDialog.getColor(QColor(r, g, b), None)
 
-        r = color.red()
-        g = color.green()
-        b = color.blue()
-
-        # TODO: Look at the return status. There is a way to check a canceled dialog.
-        if r == g == b == 0:
-            status = False
+        if color.isValid():
+            r = color.red()
+            g = color.green()
+            b = color.blue()
+            status = True
 
         return (r, g, b, status)
 # ==============================================================================
