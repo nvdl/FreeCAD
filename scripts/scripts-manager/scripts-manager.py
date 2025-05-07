@@ -57,8 +57,8 @@ import FreeCAD
 import FreeCADGui
 # ==============================================================================
 __title__ = "Scripts Manager"
-__version__ = "1.2"
-__date__ = "15/03/2025"
+__version__ = "1.3"
+__date__ = "08/05/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -118,7 +118,11 @@ class MacroWindow(QMainWindow):
                             # importlib.reload(sys.modules[modulePath])
                         else:
                             # self.consoleMessage(f"Loading {modulePath=}.\n")
-                            importlib.import_module(modulePath)
+                            try:
+                                importlib.import_module(modulePath)
+                            except:
+                                self.consoleError(f"Failed to load \"{modulePath}\".\n")
+                                continue
 
                 modulePath = pathName + ".custom_script"
                 # self.consoleMessage(f"{modulePath=}\n")
