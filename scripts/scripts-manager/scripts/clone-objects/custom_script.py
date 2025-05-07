@@ -44,8 +44,27 @@ class CustomScript():
             self.parent.statusMessage("Nothing selected.")
             return
 
+        text, status = self.parent.inputDialog(
+            self.modulePath, "Please enter the number of clones.")
+
+        if not status or text == "":
+            self.parent.statusMessage("Cancelled or empty input.")
+            return
+
+        try:
+            numClones = int(text)
+        except ValueError:
+            self.parent.statusMessage("Invalid input.")
+            return
+
+        if numClones <= 0:
+            self.parent.statusMessage("Invalid input.")
+            return
+
         for obj in objs:
-            clone = Draft.make_clone(obj)
+            for _ in range(numClones):
+                clone = Draft.make_clone(obj)
+                clone.Label = f"clone-{obj.Label}"
 
         FreeCAD.ActiveDocument.recompute()
 

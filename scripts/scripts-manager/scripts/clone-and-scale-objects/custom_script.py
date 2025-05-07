@@ -23,6 +23,8 @@
 *                                                                         *
 ***************************************************************************
 '''
+import math
+
 import FreeCAD
 import Draft
 # ==============================================================================
@@ -45,7 +47,7 @@ class CustomScript():
             return
 
         text, status = self.parent.inputDialog(
-            self.modulePath, "Please specify the scales in \"scaleX,scaleY,scaleZ\" format.")
+            self.modulePath, "Please enter the scales in \"scale-x,scale-y,scale-z\" format or only one number for uniform scaling.")
 
         if not status or text == "":
             self.parent.statusMessage("Cancelled or empty input.")
@@ -57,13 +59,41 @@ class CustomScript():
             self.parent.statusMessage("Invalid input.")
             return
 
-        if len(scales) != 3:
-            self.parent.statusMessage("Invalid number of arguments.")
+        if len(scales) not in [1, 3]:
+            self.parent.statusMessage("Invalid input.")
             return
 
+        if (0 in scales) or (math.inf in scales) or (-math.inf in scales):
+            self.parent.statusMessage("Invalid input.")
+            return
+
+        text, status = self.parent.inputDialog(
+            self.modulePath, "Please enter the number of clones.")
+
+        if not status or text == "":
+            self.parent.statusMessage("Cancelled or empty input.")
+            return
+
+        try:
+            numClones = int(text)
+        except ValueError:
+            self.parent.statusMessage("Invalid input.")
+            return
+
+        if numClones <= 0:
+            self.parent.statusMessage("Invalid input.")
+            return
+
+        if len(scales) == 3:
+            vecScale = FreeCAD.Vector(scales[0], scales[1], scales[2])
+        else:
+            vecScale = FreeCAD.Vector(scales[0], scales[0], scales[0])
+
         for obj in objs:
-            clone = Draft.make_clone(obj)
-            clone.Scale = FreeCAD.Vector(scales[0], scales[1], scales[2])
+            for _ in range(numClones):
+                clone = Draft.make_clone(obj)
+                clone.Scale = vecScale
+                clone.Label = f"clone-{obj.Label}"
 
         FreeCAD.ActiveDocument.recompute()
 
