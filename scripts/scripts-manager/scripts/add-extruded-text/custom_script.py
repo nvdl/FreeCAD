@@ -109,7 +109,7 @@ class CustomScript():
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = "Add text and extrude it."
+        aboutStr = "Add extruded text."
 
         return aboutStr
 # ==============================================================================
