@@ -1,2 +1,2 @@
 # About
-Collapse the tree view of objects completely.
+Collapse the tree view of objects in the GUI completely.
