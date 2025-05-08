@@ -50,8 +50,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.6"
-__date__ = "26/04/2025"
+__version__ = "2.7"
+__date__ = "08/05/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -126,9 +126,6 @@ class MacroWindow(QMainWindow):
         self.ui.btnAddCenterMark.clicked.connect(self.btnAddCenterMarkClicked)
         self.ui.btnToggleOriginMark.clicked.connect(self.btnToggleOriginMarkClicked)
         self.ui.btnDefaultLineColor.clicked.connect(self.btnDefaultLineColorClicked)
-        self.ui.btnAddDimensionX.clicked.connect(self.btnAddDimensionClicked)
-        self.ui.btnAddDimensionY.clicked.connect(self.btnAddDimensionClicked)
-        self.ui.btnAddDimensionZ.clicked.connect(self.btnAddDimensionClicked)
         self.ui.btnTransparencyEnable.clicked.connect(self.btnTransparencyEnableClicked)
         self.ui.btnTransparencyDisable.clicked.connect(self.btnTransparencyDisableClicked)
 
@@ -675,74 +672,6 @@ class MacroWindow(QMainWindow):
 
                 break
 # ==================================================================================================
-    def btnAddDimensionClicked(self) -> None:
-
-        self.ui.statusBar.clearMessage()
-
-        selection = Gui.Selection.getSelectionEx()
-
-        obj1 = obj2 = None
-
-        if len(selection) == 1:
-            subObjs = selection[0].SubObjects
-
-            if len(subObjs) == 2:
-                obj1 = subObjs[0]
-                obj2 = subObjs[1]
-
-        elif len(selection) == 2:
-            subObjs1 = selection[0].SubObjects
-            subObjs2 = selection[1].SubObjects
-
-            if len(subObjs1) == 1 and len(subObjs2) == 1:
-                obj1 = subObjs1[0]
-                obj2 = subObjs2[0]
-
-        if obj1 == None or obj2 == None:
-            self.ui.statusBar.showMessage("Please select two parts; edge or vertex.")
-            return
-
-        p1 = p2 = None
-
-        if type(obj1) == Part.Vertex:
-            p1 = FreeCAD.Vector(obj1.X, obj1.Y, obj1.Z)
-        elif type(obj1) == Part.Edge:
-            p1 = obj1.firstVertex().Point
-
-        if type(obj2) == Part.Vertex:
-            p2 = FreeCAD.Vector(obj2.X, obj2.Y, obj2.Z)
-        elif type(obj2) == Part.Edge:
-            p2 = obj2.firstVertex().Point
-
-        if p1 == None or p2 == None:
-            self.ui.statusBar.showMessage("Please select two parts; edge or vertex.")
-            return
-
-        dimensionType = str(self.sender().objectName())[-1:]
-
-        assert p1 is not None
-        assert p2 is not None
-
-        if dimensionType == "X":
-            p2 = FreeCAD.Vector(p2.x, p1.y, p1.z)
-        elif dimensionType == "Y":
-            p2 = FreeCAD.Vector(p1.x, p2.y, p1.z)
-        elif dimensionType == "Z":
-            p2 = FreeCAD.Vector(p1.x, p1.y, p2.z)
-        else:
-            return
-
-        if p1 == p2:
-            self.ui.statusBar.showMessage("Cannot add a dimension of zero length.")
-            return
-
-        d = Draft.make_dimension(p1, p2)
-
-        dv = d.ViewObject
-
-        dv.ArrowType = 0
-        dv.LineColor = self.markerLineColor
-# ==================================================================================================
     def btnOrthographicClicked(self) -> None:
 
         self.ui.statusBar.clearMessage()
@@ -832,13 +761,13 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(460, 480)
+        MainWindow.resize(460, 430)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QSize(460, 480))
+        MainWindow.setMinimumSize(QSize(460, 430))
         MainWindow.setMaximumSize(QSize(460, 480))
         self.actionOpen = QAction(MainWindow)
         self.actionOpen.setObjectName(u"actionOpen")
@@ -892,7 +821,7 @@ class Ui_MainWindow(object):
         self.sldTranslateDelta.setOrientation(Qt.Horizontal)
         self.chkWireFrame = QCheckBox(self.tab)
         self.chkWireFrame.setObjectName(u"chkWireFrame")
-        self.chkWireFrame.setGeometry(QRect(10, 340, 180, 30))
+        self.chkWireFrame.setGeometry(QRect(10, 290, 180, 30))
         self.lbldX = QLabel(self.tab)
         self.lbldX.setObjectName(u"lbldX")
         self.lbldX.setGeometry(QRect(10, 10, 40, 20))
@@ -921,11 +850,6 @@ class Ui_MainWindow(object):
         self.lblTranslateDelta.setObjectName(u"lblTranslateDelta")
         self.lblTranslateDelta.setGeometry(QRect(360, 100, 100, 20))
         self.lblTranslateDelta.setAlignment(Qt.AlignCenter)
-        self.btnAddDimensionZ = QPushButton(self.tab)
-        self.btnAddDimensionZ.setObjectName(u"btnAddDimensionZ")
-        self.btnAddDimensionZ.setEnabled(True)
-        self.btnAddDimensionZ.setGeometry(QRect(310, 260, 140, 40))
-        self.btnAddDimensionZ.setMinimumSize(QSize(0, 0))
         self.btnOrthographic = QPushButton(self.tab)
         self.btnOrthographic.setObjectName(u"btnOrthographic")
         self.btnOrthographic.setEnabled(True)
@@ -943,7 +867,7 @@ class Ui_MainWindow(object):
         self.btnAddCenterMark.setMinimumSize(QSize(0, 0))
         self.chkSnap = QCheckBox(self.tab)
         self.chkSnap.setObjectName(u"chkSnap")
-        self.chkSnap.setGeometry(QRect(10, 370, 180, 30))
+        self.chkSnap.setGeometry(QRect(10, 320, 180, 30))
         self.btnDefaultLineColor = QPushButton(self.tab)
         self.btnDefaultLineColor.setObjectName(u"btnDefaultLineColor")
         self.btnDefaultLineColor.setEnabled(True)
@@ -951,13 +875,13 @@ class Ui_MainWindow(object):
         self.btnDefaultLineColor.setMinimumSize(QSize(0, 0))
         self.chkCenterMarks = QCheckBox(self.tab)
         self.chkCenterMarks.setObjectName(u"chkCenterMarks")
-        self.chkCenterMarks.setGeometry(QRect(160, 340, 200, 30))
+        self.chkCenterMarks.setGeometry(QRect(160, 290, 200, 30))
         self.chkAutoUpdateView = QCheckBox(self.tab)
         self.chkAutoUpdateView.setObjectName(u"chkAutoUpdateView")
-        self.chkAutoUpdateView.setGeometry(QRect(10, 400, 180, 30))
+        self.chkAutoUpdateView.setGeometry(QRect(10, 350, 180, 30))
         self.chkAutoRecompute = QCheckBox(self.tab)
         self.chkAutoRecompute.setObjectName(u"chkAutoRecompute")
-        self.chkAutoRecompute.setGeometry(QRect(160, 400, 200, 30))
+        self.chkAutoRecompute.setGeometry(QRect(160, 350, 200, 30))
         self.chkAutoRecompute.setChecked(True)
         self.sldSnapDistance = QSlider(self.tab)
         self.sldSnapDistance.setObjectName(u"sldSnapDistance")
@@ -975,20 +899,10 @@ class Ui_MainWindow(object):
         self.lblSnap.setGeometry(QRect(10, 130, 40, 20))
         self.chkBoundingBoxes = QCheckBox(self.tab)
         self.chkBoundingBoxes.setObjectName(u"chkBoundingBoxes")
-        self.chkBoundingBoxes.setGeometry(QRect(160, 310, 200, 30))
+        self.chkBoundingBoxes.setGeometry(QRect(160, 260, 200, 30))
         self.chkAlwaysOnTop = QCheckBox(self.tab)
         self.chkAlwaysOnTop.setObjectName(u"chkAlwaysOnTop")
-        self.chkAlwaysOnTop.setGeometry(QRect(10, 310, 180, 30))
-        self.btnAddDimensionY = QPushButton(self.tab)
-        self.btnAddDimensionY.setObjectName(u"btnAddDimensionY")
-        self.btnAddDimensionY.setEnabled(True)
-        self.btnAddDimensionY.setGeometry(QRect(160, 260, 140, 40))
-        self.btnAddDimensionY.setMinimumSize(QSize(0, 0))
-        self.btnAddDimensionX = QPushButton(self.tab)
-        self.btnAddDimensionX.setObjectName(u"btnAddDimensionX")
-        self.btnAddDimensionX.setEnabled(True)
-        self.btnAddDimensionX.setGeometry(QRect(10, 260, 140, 40))
-        self.btnAddDimensionX.setMinimumSize(QSize(0, 0))
+        self.chkAlwaysOnTop.setGeometry(QRect(10, 260, 180, 30))
         self.btnToggleOriginMark = QPushButton(self.tab)
         self.btnToggleOriginMark.setObjectName(u"btnToggleOriginMark")
         self.btnToggleOriginMark.setEnabled(True)
@@ -996,21 +910,21 @@ class Ui_MainWindow(object):
         self.btnToggleOriginMark.setMinimumSize(QSize(0, 0))
         self.chkHighlight = QCheckBox(self.tab)
         self.chkHighlight.setObjectName(u"chkHighlight")
-        self.chkHighlight.setGeometry(QRect(160, 370, 200, 30))
+        self.chkHighlight.setGeometry(QRect(160, 320, 200, 30))
         self.chkHighlight.setChecked(True)
         self.tabMain.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
         self.lblTransparency2 = QLabel(self.tab_2)
         self.lblTransparency2.setObjectName(u"lblTransparency2")
-        self.lblTransparency2.setGeometry(QRect(360, 10, 100, 20))
+        self.lblTransparency2.setGeometry(QRect(360, 40, 100, 20))
         self.lblTransparency2.setAlignment(Qt.AlignCenter)
         self.lblTransparency = QLabel(self.tab_2)
         self.lblTransparency.setObjectName(u"lblTransparency")
-        self.lblTransparency.setGeometry(QRect(10, 10, 40, 20))
+        self.lblTransparency.setGeometry(QRect(10, 40, 40, 20))
         self.sldTransparency = QSlider(self.tab_2)
         self.sldTransparency.setObjectName(u"sldTransparency")
-        self.sldTransparency.setGeometry(QRect(50, 0, 300, 40))
+        self.sldTransparency.setGeometry(QRect(50, 30, 300, 40))
         self.sldTransparency.setMinimum(0)
         self.sldTransparency.setMaximum(100)
         self.sldTransparency.setSingleStep(5)
@@ -1020,13 +934,16 @@ class Ui_MainWindow(object):
         self.btnTransparencyEnable = QPushButton(self.tab_2)
         self.btnTransparencyEnable.setObjectName(u"btnTransparencyEnable")
         self.btnTransparencyEnable.setEnabled(True)
-        self.btnTransparencyEnable.setGeometry(QRect(160, 60, 140, 40))
+        self.btnTransparencyEnable.setGeometry(QRect(160, 70, 140, 40))
         self.btnTransparencyEnable.setMinimumSize(QSize(0, 0))
         self.btnTransparencyDisable = QPushButton(self.tab_2)
         self.btnTransparencyDisable.setObjectName(u"btnTransparencyDisable")
         self.btnTransparencyDisable.setEnabled(True)
-        self.btnTransparencyDisable.setGeometry(QRect(160, 110, 140, 40))
+        self.btnTransparencyDisable.setGeometry(QRect(160, 120, 140, 40))
         self.btnTransparencyDisable.setMinimumSize(QSize(0, 0))
+        self.lblTransparency_2 = QLabel(self.tab_2)
+        self.lblTransparency_2.setObjectName(u"lblTransparency_2")
+        self.lblTransparency_2.setGeometry(QRect(10, 10, 250, 20))
         self.tabMain.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusBar = QStatusBar(MainWindow)
@@ -1036,8 +953,7 @@ class Ui_MainWindow(object):
         QWidget.setTabOrder(self.sldTranslateY, self.sldTranslateZ)
         QWidget.setTabOrder(self.sldTranslateZ, self.sldTranslateDelta)
         QWidget.setTabOrder(self.sldTranslateDelta, self.btnResetTransforms)
-        QWidget.setTabOrder(self.btnResetTransforms, self.btnAddDimensionZ)
-        QWidget.setTabOrder(self.btnAddDimensionZ, self.btnAddCenterMark)
+        QWidget.setTabOrder(self.btnResetTransforms, self.btnAddCenterMark)
         QWidget.setTabOrder(self.btnAddCenterMark, self.btnOrthographic)
         QWidget.setTabOrder(self.btnOrthographic, self.btnPerspective)
         QWidget.setTabOrder(self.btnPerspective, self.chkWireFrame)
@@ -1064,7 +980,6 @@ class Ui_MainWindow(object):
         self.lblTranslateZ.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
         self.lblTranslateY.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
         self.lblTranslateDelta.setText(QCoreApplication.translate("MainWindow", u"0", None))
-        self.btnAddDimensionZ.setText(QCoreApplication.translate("MainWindow", u"Add Dimension Z", None))
         self.btnOrthographic.setText(QCoreApplication.translate("MainWindow", u"Orthographic View", None))
         self.btnPerspective.setText(QCoreApplication.translate("MainWindow", u"Perspective View", None))
         self.btnAddCenterMark.setText(QCoreApplication.translate("MainWindow", u"Add Center Mark", None))
@@ -1077,8 +992,6 @@ class Ui_MainWindow(object):
         self.lblSnap.setText(QCoreApplication.translate("MainWindow", u"Snap", None))
         self.chkBoundingBoxes.setText(QCoreApplication.translate("MainWindow", u"Draw bounding boxes", None))
         self.chkAlwaysOnTop.setText(QCoreApplication.translate("MainWindow", u"Always on top", None))
-        self.btnAddDimensionY.setText(QCoreApplication.translate("MainWindow", u"Add Dimension Y", None))
-        self.btnAddDimensionX.setText(QCoreApplication.translate("MainWindow", u"Add Dimension X", None))
         self.btnToggleOriginMark.setText(QCoreApplication.translate("MainWindow", u"Toggle Origin Mark", None))
         self.chkHighlight.setText(QCoreApplication.translate("MainWindow", u"Highlight when moving", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tab),
@@ -1087,6 +1000,8 @@ class Ui_MainWindow(object):
         self.lblTransparency.setText(QCoreApplication.translate("MainWindow", u"Tran", None))
         self.btnTransparencyEnable.setText(QCoreApplication.translate("MainWindow", u"Enable/Apply", None))
         self.btnTransparencyDisable.setText(QCoreApplication.translate("MainWindow", u"Disable", None))
+        self.lblTransparency_2.setText(QCoreApplication.translate(
+            "MainWindow", u"Set transparency of all objects:", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tab_2),
                                 QCoreApplication.translate("MainWindow", u"View", None))
 # ===========================================================================
