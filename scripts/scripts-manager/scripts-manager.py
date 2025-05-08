@@ -319,9 +319,9 @@ class MacroWindow(QMainWindow):
 
         return (r, g, b, status)
 # ==============================================================================
-    def optionsDialog(self, mode, options) -> tuple[list[str], bool]:
+    def optionsDialog(self, mode, prompt, options) -> tuple[list[str], bool]:
 
-        winOptions = WindowOptions(self, mode, options)
+        winOptions = WindowOptions(self, mode, prompt, options)
 
         while winOptions.isVisible():
             QApplication.instance().processEvents()
@@ -440,7 +440,7 @@ class Ui_MainWindow(object):
 # ==============================================================================
 class WindowOptions(QMainWindow):
 
-    def __init__(self, parent: QMainWindow, mode, options) -> None:
+    def __init__(self, parent: QMainWindow, mode, prompt, options) -> None:
 
         super(WindowOptions, self).__init__(parent)
 
@@ -459,15 +459,20 @@ class WindowOptions(QMainWindow):
         self.move(parent.pos().x() - (winWidth + 10), parent.pos().y())
 
         if mode == "single":
-            self.setWindowTitle("Please Select One Option")
+            self.setWindowTitle("Single Option Mode")
         elif mode == "multiple":
-            self.setWindowTitle("Please Select One Or More Options")
+            self.setWindowTitle("Multiple Options Mode")
         else:
             assert False, "Wrong mode."
 
+        self.lblPrompt = QLabel(self)
+        self.lblPrompt.resize(280, 20)
+        self.lblPrompt.move(10, 10)
+        self.lblPrompt.setText(prompt)
+
         self.lstOptions = QListWidget(self)
-        self.lstOptions.resize(280, 410)
-        self.lstOptions.move(10, 10)
+        self.lstOptions.resize(280, 380)
+        self.lstOptions.move(10, 40)
         self.lstOptions.itemDoubleClicked.connect(self.listItemDoubleClicked)
         self.lstOptions.setContextMenuPolicy(Qt.CustomContextMenu)
 

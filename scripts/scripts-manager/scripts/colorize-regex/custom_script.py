@@ -67,7 +67,7 @@ class CustomScript():
         customThemes = list(filter(lambda theme: theme != "global", themesVariables.keys()))
 
         if len(customThemes) > 1:
-            selection, status = self.parent.optionsDialog("single", customThemes)
+            selection, status = self.parent.optionsDialog("single", "Please select the theme.", customThemes)
 
             if not status:
                 return
