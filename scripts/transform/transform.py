@@ -768,7 +768,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QSize(460, 430))
-        MainWindow.setMaximumSize(QSize(460, 480))
+        MainWindow.setMaximumSize(QSize(460, 430))
         self.actionOpen = QAction(MainWindow)
         self.actionOpen.setObjectName(u"actionOpen")
         self.actionClose = QAction(MainWindow)
