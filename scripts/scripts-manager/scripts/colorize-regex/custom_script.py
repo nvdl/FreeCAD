@@ -236,7 +236,6 @@ class CustomScript():
 
         objs = self.common.getAllObjects()
         objs = [obj for obj in objs if hasattr(obj, "ViewObject")]
-        objs = [obj for obj in objs if hasattr(obj.ViewObject, "ShapeAppearance")]
 
         for line in lines:
             fields1 = line.split(",")
@@ -329,12 +328,13 @@ class CustomScript():
                     viewObj.Visibility = False
                     continue
 
-                viewObj.ShapeAppearance = FreeCAD.Material(DiffuseColor=colorDiffuse,
-                                                           AmbientColor=colorAmbient,
-                                                           SpecularColor=colorSpecular,
-                                                           EmissiveColor=colorEmissive,
-                                                           Shininess=shininess,
-                                                           Transparency=transparency)
+                if hasattr(viewObj, "ShapeAppearance"):
+                    viewObj.ShapeAppearance = FreeCAD.Material(DiffuseColor=colorDiffuse,
+                                                               AmbientColor=colorAmbient,
+                                                               SpecularColor=colorSpecular,
+                                                               EmissiveColor=colorEmissive,
+                                                               Shininess=shininess,
+                                                               Transparency=transparency)
 
                 if hasattr(viewObj, "LineColor"):
                     viewObj.LineColor = colorLine
@@ -347,6 +347,9 @@ class CustomScript():
 
                 if hasattr(viewObj, "PointSize"):
                     viewObj.PointSize = sizePoint
+
+                if hasattr(viewObj, "TextColor"):
+                    viewObj.TextColor = colorPoint
 
         return True
 # ==============================================================================

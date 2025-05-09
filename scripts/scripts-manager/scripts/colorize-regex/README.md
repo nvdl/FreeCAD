@@ -14,6 +14,7 @@ Following properties can be set:
 - Line width
 - Point color
 - Point size
+- Text color
 - Shininess
 - Transparency
 
@@ -43,18 +44,18 @@ themeABC, cBlack, 000000
 ```
 -room-|-bathroom- , ${cGray150} , 333333 , 000000 , 000000 , ${cL1} , 4 , ${cBlack} , 2 , 20 , 100 # Rooms/baths
 
-# Regex:           -room-|-bathroom-
-# DiffuseColor:    ${cGray150}
-# AmbientColor:    333333
-# SpecularColor:   000000
-# EmissiveColor:   000000
-# LineColor:       ${cL1}
-# LineWidth:       4
-# PointColor:      ${cBlack}
-# PointSize:       2
-# Shininess:       20
-# Transparency:    100
-# OptionalComment: # Rooms/baths
+# Regex (for labels):   -room-|-bathroom-
+# DiffuseColor:         ${cGray150}
+# AmbientColor:         333333
+# SpecularColor:        000000
+# EmissiveColor:        000000
+# LineColor:            ${cL1}
+# LineWidth:            4
+# PointColor/TextColor: ${cBlack}
+# PointSize:            2
+# Shininess:            20
+# Transparency:         100
+# OptionalComment:      # Rooms/baths
 ```
 
 ## An example
@@ -134,8 +135,8 @@ themeABC    ,    col1    ,    ffffff    #    OK
 ## Order of updates
 Paramaters are set based on the order of regexes in the settings file. Thus, use a more selective regex earlier.
 ```
-.*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0   # All objects
--room-|-bathroom- , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  ,  100 # Rooms/baths
+.*                , ${cGray150} , 333333 , 000000 , 000000 , ${cL1} , 2 , 191919    , 2 , 20 , 0   # All objects
+-room-|-bathroom- , ${cGray150} , 333333 , 000000 , 000000 , ${cL1} , 4 , ${cBlack} , 2 , 20 , 100 # Rooms/baths
 ```
 
 **".*"** regex will update all objects including objects with names containing **"-room-"** or **"-bathroom-"**.
@@ -152,8 +153,8 @@ All the other CSV parameters are ignored and not set for the objects.
 To make an object visible again, rename the object's label as not to match the regex and set it to visible (manually).
 This script doesn't make the objects visible automatically.
 ```
-.*                , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0 # All objects
-^hide-            , 000000         , 000000 , 000000 , 000000 , 000000   , 0 , 000000    , 0 , 0   , -1 # Hide objects with labels starting with "hide-"
+.*     , ${cGray150} , 333333 , 000000 , 000000 , ${cL1} , 2 , 191919 , 2 , 20 , 0  # All objects
+^hide- , 000000      , 000000 , 000000 , 000000 , 000000 , 0 , 000000 , 0 , 0  , -1 # Hide objects with labels starting with "hide-"
 ```
 
 ## HSV notation
@@ -162,7 +163,16 @@ The range for H, S and V is from 0.0 to 100.0.
 Each value is a floating point value.
 The notation is "H/S/V".
 ```
-.*         , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1}   , 2 , 191919    , 2 , 20  ,  0   # All objects
--room-     , 10.1/20.2/30.3 , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  ,  100 # H: 10.1, S: 20.2, V: 30.3
--bathroom- , 10/20/30       , 333333 , 000000 , 000000 , ${cL1}   , 4 , ${cBlack} , 2 , 20  ,  100 # H: 10, S: 20, V: 30
+.*         , ${cGray150}    , 333333 , 000000 , 000000 , ${cL1} , 2 , 191919    , 2 , 20 , 0   # All objects
+-room-     , 10.1/20.2/30.3 , 333333 , 000000 , 000000 , ${cL1} , 4 , ${cBlack} , 2 , 20 , 100 # H: 10.1, S: 20.2, V: 30.3
+-bathroom- , 10/20/30       , 333333 , 000000 , 000000 , ${cL1} , 4 , ${cBlack} , 2 , 20 , 100 # H: 10, S: 20, V: 30
+```
+
+## Text color
+Text color uses the point color if the object has that property.
+For example, the dimensions from "Draft.make_dimension()" (with "-dim-" in their labels) will be updated to have
+a line color as "cRed", line width as 4 and text color as "cBlack" in the following configuration.
+```
+.*    , ${cGray150} , 333333 , 000000 , 000000 , ${cL1}  , 2 , 191919    , 2 , 20 , 0 # All objects
+-dim- , 000000      , 000000 , 000000 , 000000 , ${cRed} , 4 , ${cBlack} , 2 , 20 , 0 # Dimensions with "-dim-" in their labels
 ```
