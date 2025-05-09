@@ -132,6 +132,7 @@ class CustomScript():
     def about(self) -> str:
 
         aboutStr = ("Add a dimension by selecting two parts; edge or vertex.\n"
+                    "Supports edge-to-edge, vertex-to-vertex and vertex-to-edge dimensions.\n"
                     "Please edit the script to set the default parameters for the dimension.")
 
         return aboutStr

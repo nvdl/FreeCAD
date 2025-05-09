@@ -16,8 +16,6 @@
 *   - Translation of a single, multiple or a group (FreeCAD group)        *
 *     of objects.                                                         *
 *   - Snapping to center and origin marks (after adding them).            *
-*   - Addition of "edge-to-edge", "vertex-to-vertex" and                  *
-*     "vertex-to-edge" dimensions.                                        *
 *   - Changing line colors of objects under translation (highlighting).  *
 *   - Toggling transparencies of all objects (x-ray mode).                *
 *                                                                         *
