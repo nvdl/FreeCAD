@@ -48,8 +48,8 @@ import Part
 import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.7"
-__date__ = "08/05/2025"
+__version__ = "2.8"
+__date__ = "10/05/2025"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -737,12 +737,14 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def getCenter(self, obj) -> "FreeCAD.Vector":
 
-        if obj.TypeId.startswith("Mesh::"):
-            center = obj.Mesh.BoundBox.Center
-        elif obj.TypeId == "Image::ImagePlane":
+        center = None
+
+        if hasattr(obj, "Placement"):
             center = obj.Placement.Base
-        else:
+        elif hasattr(obj, "Shape"):
             center = obj.Shape.BoundBox.Center
+        elif hasattr(obj, "Mesh"):
+            center = obj.Mesh.BoundBox.Center
 
         return center
 # ===========================================================================
