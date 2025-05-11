@@ -692,12 +692,11 @@ class MacroWindow(QMainWindow):
 
         color = QColorDialog.getColor(QColor(r, g, b), None)
 
-        r = color.red()
-        g = color.green()
-        b = color.blue()
+        if color.isValid():
+            r = color.red()
+            g = color.green()
+            b = color.blue()
 
-        # "r", "g" and "b" are zero when the dialog is canceled.
-        if not (r == g == b == 0):
             self.markerLineColor = (r / 255.0, g / 255.0, b / 255.0, 0.0)
 # ==================================================================================================
     def btnTransparencyEnableClicked(self):
@@ -712,6 +711,7 @@ class MacroWindow(QMainWindow):
 
         for obj in FreeCAD.ActiveDocument.Objects:
             viewObject = obj.ViewObject
+
             if hasattr(viewObject, "Transparency"):
                 viewObject.Transparency = value
 # ==================================================================================================
@@ -739,12 +739,12 @@ class MacroWindow(QMainWindow):
 
         center = None
 
-        if hasattr(obj, "Placement"):
-            center = obj.Placement.Base
-        elif hasattr(obj, "Shape"):
+        if hasattr(obj, "Shape"):
             center = obj.Shape.BoundBox.Center
         elif hasattr(obj, "Mesh"):
             center = obj.Mesh.BoundBox.Center
+        elif hasattr(obj, "Placement"):
+            center = obj.Placement.Base
 
         return center
 # ===========================================================================
