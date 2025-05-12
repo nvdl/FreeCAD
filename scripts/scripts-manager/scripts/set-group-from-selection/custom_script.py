@@ -43,7 +43,7 @@ class CustomScript():
             self.parent.statusMessage("Nothing selected.")
             return
 
-        groups = [selObj for selObj in selObjs if type(selObj) == FreeCAD.DocumentObjectGroup]
+        groups = [selObj for selObj in selObjs if type(selObj) is FreeCAD.DocumentObjectGroup]
 
         if len(groups) == 0:
             self.parent.statusMessage("No group selected.")

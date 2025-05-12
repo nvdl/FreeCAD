@@ -440,7 +440,7 @@ class MacroWindow(QMainWindow):
         objs = []
 
         for obj in group.Group:
-            if type(obj.Shape) != Part.Face:
+            if type(obj.Shape) is not Part.Face:
                 objs.append(obj)
             else:
                 App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")

@@ -65,14 +65,14 @@ class CustomScript():
 
         p1 = p2 = None
 
-        if type(obj1) == Part.Vertex:
+        if type(obj1) is Part.Vertex:
             p1 = FreeCAD.Vector(obj1.X, obj1.Y, obj1.Z)
-        elif type(obj1) == Part.Edge:
+        elif type(obj1) is Part.Edge:
             p1 = obj1.firstVertex().Point
 
-        if type(obj2) == Part.Vertex:
+        if type(obj2) is Part.Vertex:
             p2 = FreeCAD.Vector(obj2.X, obj2.Y, obj2.Z)
-        elif type(obj2) == Part.Edge:
+        elif type(obj2) is Part.Edge:
             p2 = obj2.firstVertex().Point
 
         if (p1 is None) or (p2 is None):

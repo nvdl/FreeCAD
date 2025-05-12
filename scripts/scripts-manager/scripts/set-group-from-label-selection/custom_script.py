@@ -62,7 +62,7 @@ class CustomScript():
 
         group = groups[0]
 
-        if type(group) != FreeCAD.DocumentObjectGroup:
+        if type(group) is not FreeCAD.DocumentObjectGroup:
             self.parent.statusMessage("Selection is not a group of objects.")
 
             self.parent.messageBoxInformation(self.modulePath,

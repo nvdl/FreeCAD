@@ -51,11 +51,11 @@ class CustomScript():
             self.parent.statusMessage(f"{selObj.SubObjects}")
 
             for selObj2 in selObj.SubObjects:
-                if type(selObj2) == Part.Vertex:
+                if type(selObj2) is Part.Vertex:
                     message = "Type: vertex\n\n"
                     message += f"Position: ({selObj2.X}, {selObj2.Y}, {selObj2.Z})"
 
-                elif type(selObj2) == Part.Edge:
+                elif type(selObj2) is Part.Edge:
                     message = "Type: edge\n\n"
                     message += "Edge "
                     message += f"length: {selObj2.Length}\n\n"
@@ -65,7 +65,7 @@ class CustomScript():
                     for i, vertex in enumerate(vertices):
                         message += f"Vertex {i + 1} position: ({vertex.X}, {vertex.Y}, {vertex.Z})\n"
 
-                elif type(selObj2) == Part.Face:
+                elif type(selObj2) is Part.Face:
                     message = "Type: face\n\n"
                     message += "Parameter "
                     message += f"length: {selObj2.Length}\n\n"
