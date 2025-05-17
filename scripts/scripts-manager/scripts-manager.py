@@ -49,6 +49,7 @@ import os
 import sys
 import pathlib
 import importlib
+from traceback import print_exc
 
 from PySide.QtGui import *
 from PySide.QtCore import *
@@ -122,6 +123,7 @@ class MacroWindow(QMainWindow):
                                 importlib.import_module(modulePath)
                             except:
                                 self.consoleError(f"Failed to load \"{modulePath}\".\n")
+                                print_exc()
                                 continue
 
                 modulePath = pathName + ".custom_script"
