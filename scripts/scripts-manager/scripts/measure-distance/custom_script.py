@@ -93,7 +93,7 @@ class CustomScript():
         distanceEuclidean = ((dx ** 2) + (dy ** 2) + (dz ** 2)) ** 0.5
 
         message = f"dX: {dx}\ndY: {dy}\ndZ:{dz}\n\n"
-        message += f"Euclidean distance: {distanceEuclidean}"
+        message += f"Euclidean distance:\n{distanceEuclidean}"
 
         self.parent.consoleMessage(message)
         self.parent.messageBoxInformation(self.modulePath, message)
