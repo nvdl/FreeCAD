@@ -100,12 +100,12 @@ class CustomScript():
             newObj4.Shape = shape
             newObj4.Label = "solid-" + obj.Label
 
-            newObj4.ViewObject.LineColor = obj.ViewObject.LineColor
-            newObj4.ViewObject.LineWidth = obj.ViewObject.LineWidth
-            newObj4.ViewObject.PointColor = obj.ViewObject.LineColor
-            newObj4.ViewObject.PointSize = obj.ViewObject.PointSize
-            newObj4.ViewObject.ShapeAppearance = obj.ViewObject.ShapeAppearance
-            newObj4.ViewObject.Transparency = obj.ViewObject.Transparency
+            # newObj4.ViewObject.LineColor = obj.ViewObject.LineColor
+            # newObj4.ViewObject.LineWidth = obj.ViewObject.LineWidth
+            # newObj4.ViewObject.PointColor = obj.ViewObject.LineColor
+            # newObj4.ViewObject.PointSize = obj.ViewObject.PointSize
+            # newObj4.ViewObject.ShapeAppearance = obj.ViewObject.ShapeAppearance
+            # newObj4.ViewObject.Transparency = obj.ViewObject.Transparency
 
             FreeCAD.ActiveDocument.recompute()
             # --e Create a simple copy to remove dependency.
