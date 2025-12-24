@@ -24,6 +24,8 @@
 ***************************************************************************
 '''
 import FreeCADGui
+
+from PySide import QtWidgets
 # ==============================================================================
 class CustomScript():
 
@@ -36,24 +38,58 @@ class CustomScript():
 
         self.parent.statusMessage(f"Running \"{self.modulePath}\".")
 
-        activeView = FreeCADGui.activeDocument().activeView()
+        activeDoc = FreeCADGui.activeDocument()
 
-        backgroundColor = "Transparent"
-        # backgroundColor = "White"
-        # backgroundColor = "Black"
+        if activeDoc is None:
+            self.parent.statusMessage(f"\"{self.modulePath}\": No active document is available.")
+            return
 
-        sizex, sizey = activeView.getSize()
+        activeView = activeDoc.activeView()
+
+        if activeView is None:
+            self.parent.statusMessage(f"\"{self.modulePath}\": No active view is available.")
+            return
+
+        # self.parent.messageBoxInformation("Active view", str(activeView))
+        # return
 
         # filters = "PNG images (*.png);;JPG images (*.jpg)"
         filters = "PNG images (*.png)"
-
         fName, selectedFilter = self.parent.fileSaveDialog("Please specify the destination file.", filters)
 
-        if fName != "":
-            if not fName.endswith(".png"):
-                fName = f"{fName}.png"
+        if fName == "":
+            self.parent.statusMessage(f"\"{self.modulePath}\": Canceled.")
+            return
 
+        if not fName.endswith(".png"):
+            fName = f"{fName}.png"
+
+        # From the 3D view.
+        if str(activeView) == "View3DInventor":
+            backgroundColor = "Transparent"
+            # backgroundColor = "White"
+            # backgroundColor = "Black"
+
+            sizex, sizey = activeView.getSize()
             activeView.saveImage(fName, sizex, sizey, backgroundColor)
+
+        # From the "TechDraw" view.
+        elif str(activeView) == "MDI view page":
+            mainWindow = FreeCADGui.getMainWindow()
+            mdiArea = mainWindow.findChild(QtWidgets.QMdiArea)
+            activeSubWindow = mdiArea.activeSubWindow()
+
+            if not activeSubWindow:
+                self.parent.statusMessage(f"\"{self.modulePath}\": No active MDI sub-window found.")
+                return
+
+            viewWidget = activeSubWindow.widget()
+            newPixmap = viewWidget.grab()
+            newPixmap.save(fName, "PNG")
+
+        else:
+            self.parent.statusMessage(f"\"{self.modulePath}\": View is not supported.")
+            return
 
         self.parent.statusMessage(f"Done \"{self.modulePath}\".")
 # ==============================================================================
