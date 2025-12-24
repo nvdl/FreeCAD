@@ -49,7 +49,7 @@ import os
 import sys
 import pathlib
 import importlib
-from traceback import print_exc
+from traceback import format_exc, print_exc
 
 from PySide.QtGui import *
 from PySide.QtCore import *
@@ -225,12 +225,15 @@ class MacroWindow(QMainWindow):
             self.ui.statusBar.showMessage(f"Running: \"{name}\"")
             self.ui.statusBar.repaint()
 
-            importedScript.run()
+            try:
+                importedScript.run()
+            except:
+                self.messageBoxInformation(f"Exception in script: {name}", format_exc())
 
             self.ui.btnRunScript.setStyleSheet("")
             self.ui.btnRunScript.repaint()
         else:
-            self.messageBoxInformation(f"Script: {name}", "\"CustomScript\" class has no \"run\" function.")
+            self.messageBoxInformation(f"Missing attribute in script: {name}", "\"CustomScript\" class has no \"run\" function.")
 # ==============================================================================
     def getScript(self, name):
 
