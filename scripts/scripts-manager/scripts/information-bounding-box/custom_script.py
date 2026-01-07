@@ -23,6 +23,7 @@
 *                                                                         *
 ***************************************************************************
 '''
+import math
 # ==============================================================================
 class CustomScript():
 
@@ -61,8 +62,16 @@ class CustomScript():
 
             message += f"X-Length: {boundingBox.XLength}\n"
             message += f"Y-Length: {boundingBox.YLength}\n"
-            message += f"Z-Length: {boundingBox.ZLength}\n"
-            message += f"Diagonal-Length: {boundingBox.DiagonalLength}\n\n"
+            message += f"Z-Length: {boundingBox.ZLength}\n\n"
+
+            diagXY = math.hypot(boundingBox.XLength, boundingBox.YLength)
+            diagXZ = math.hypot(boundingBox.XLength, boundingBox.ZLength)
+            diagYZ = math.hypot(boundingBox.YLength, boundingBox.ZLength)
+
+            message += f"XYZ-Diagonal-Length: {boundingBox.DiagonalLength}\n"
+            message += f"XY-Diagonal-Length: {diagXY}\n"
+            message += f"XZ-Diagonal-Length: {diagXZ}\n"
+            message += f"YZ-Diagonal-Length: {diagYZ}\n\n"
 
             message += f"X-Center: {boundingBox.Center.x}\n"
             message += f"Y-Center: {boundingBox.Center.y}\n"
