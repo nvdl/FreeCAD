@@ -42,6 +42,9 @@ from dataclasses import dataclass
 from PySide.QtGui import *
 from PySide.QtCore import *
 
+from typing import Any
+from traceback import format_exc
+
 import FreeCAD
 import FreeCADGui
 import Part
@@ -91,6 +94,8 @@ class MacroWindow(QMainWindow):
         self.LINE_ORIGIN_X_NAME = f"{self.LINE_CENTER_X_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
         self.LINE_ORIGIN_Y_NAME = f"{self.LINE_CENTER_Y_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
         self.LINE_ORIGIN_Z_NAME = f"{self.LINE_CENTER_Z_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
+
+        self.AXES_MARKER_LINE_LENGTH = 500
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -166,47 +171,66 @@ class MacroWindow(QMainWindow):
 
         self.highlightLineColor = (1.0, 0.0, 0.0, 0.0)
 
-        self.axesMarkerLineLength = 500
-
         self.chkAlwaysOnTopClicked()
 # ==================================================================================================
     def chkAlwaysOnTopClicked(self) -> None:
 
-        flags = self.windowFlags()
+        try:
+            flags = self.windowFlags()
 
-        if self.ui.chkAlwaysOnTop.isChecked():
-            self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
-        else:
-            self.setWindowFlags(flags & (~Qt.WindowStaysOnTopHint))
+            if self.ui.chkAlwaysOnTop.isChecked():
+                self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
+            else:
+                self.setWindowFlags(flags & (~Qt.WindowStaysOnTopHint))
 
-        self.show()
+            self.show()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldTranslateXChanged(self) -> None:
 
-        self.translateSelection(self.ui.sldTranslateX.value(), 0, 0)
+        try:
+            self.translateSelection(self.ui.sldTranslateX.value(), 0, 0)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldTranslateYChanged(self) -> None:
 
-        self.translateSelection(0, self.ui.sldTranslateY.value(), 0)
+        try:
+            self.translateSelection(0, self.ui.sldTranslateY.value(), 0)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldTranslateZChanged(self) -> None:
 
-        self.translateSelection(0, 0, self.ui.sldTranslateZ.value())
+        try:
+            self.translateSelection(0, 0, self.ui.sldTranslateZ.value())
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldTranslateDeltaChanged(self) -> None:
 
-        self.deltaTranslation = float(10 ** self.ui.sldTranslateDelta.value())
-        self.updateTranslationLabels()
+        try:
+            self.deltaTranslation = float(10 ** self.ui.sldTranslateDelta.value())
+            self.updateTranslationLabels()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldSnapDistanceChanged(self) -> None:
 
-        self.snapDistance = float(10 ** self.ui.sldSnapDistance.value())
-        self.updateTranslationLabels()
+        try:
+            self.snapDistance = float(10 ** self.ui.sldSnapDistance.value())
+            self.updateTranslationLabels()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldTransparencyValueChanged(self) -> None:
 
-        transparency = self.ui.sldTransparency.value()
-        self.ui.lblTransparency2.setText(f"{transparency:g}")
+        try:
+            transparency = self.ui.sldTransparency.value()
+            self.ui.lblTransparency2.setText(f"{transparency:g}")
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def getObjectsParameters(self, objects):
 
@@ -255,44 +279,47 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def sldPressed(self) -> None:
 
-        App.ActiveDocument.openTransaction()
+        try:
+            App.ActiveDocument.openTransaction()
 
-        self.centerLines = []
+            self.centerLines = []
 
-        self.selectedObjsParams = self.getSelectedObjects(extended=True)
+            self.selectedObjsParams = self.getSelectedObjects(extended=True)
 
-        objs = self.getSelectedObjects(extended=False)
+            objs = self.getSelectedObjects(extended=False)
 
-        for obj in objs:
-            if obj not in self.selectedObjsParams:
-                self.selectedObjsParams.append(obj)
+            for obj in objs:
+                if obj not in self.selectedObjsParams:
+                    self.selectedObjsParams.append(obj)
 
-        for objParams in self.selectedObjsParams:
-            if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
-                objParams.object.ViewObject.BoundingBox = True
+            for objParams in self.selectedObjsParams:
+                if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
+                    objParams.object.ViewObject.BoundingBox = True
 
-            if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
-                objParams.object.ViewObject.LineColor = self.highlightLineColor
+                if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
+                    objParams.object.ViewObject.LineColor = self.highlightLineColor
 
-        self.centerLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
-        self.centerLinesParams += self.getGroupObjects(self.GROUP_LABEL_ORIGIN_LINES)
+            self.centerLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
+            self.centerLinesParams += self.getGroupObjects(self.GROUP_LABEL_ORIGIN_LINES)
 
-        # Transformation has started.
-        self.transformActive = True
+            # Transformation has started.
+            self.transformActive = True
 
-        if self.ui.chkWireFrame.isChecked():
-            for i in range(7):
-                action = self.drawStyleActions[i]
-                if action.isChecked():
-                    self.drawStyleRevertAction = action
-                    break
+            if self.ui.chkWireFrame.isChecked():
+                for i in range(7):
+                    action = self.drawStyleActions[i]
+                    if action.isChecked():
+                        self.drawStyleRevertAction = action
+                        break
 
-            self.drawStyleActions[2].trigger()
-        else:
-            self.drawStyleRevertAction = None
+                self.drawStyleActions[2].trigger()
+            else:
+                self.drawStyleRevertAction = None
 
-        if self.ui.chkCenterMarks.isChecked():
-            self.drawCenterMarks(0, 0, 0, True)
+            if self.ui.chkCenterMarks.isChecked():
+                self.drawCenterMarks(0, 0, 0, True)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def drawCenterMarks(self, dx, dy, dz, add) -> None:
 
@@ -310,9 +337,9 @@ class MacroWindow(QMainWindow):
         dy = offset[1]
         dz = offset[2]
 
-        p2 = FreeCAD.Vector(self.axesMarkerLineLength, 0, 0)
-        p3 = FreeCAD.Vector(0, self.axesMarkerLineLength, 0)
-        p4 = FreeCAD.Vector(0, 0, self.axesMarkerLineLength)
+        p2 = FreeCAD.Vector(self.AXES_MARKER_LINE_LENGTH, 0, 0)
+        p3 = FreeCAD.Vector(0, self.AXES_MARKER_LINE_LENGTH, 0)
+        p4 = FreeCAD.Vector(0, 0, self.AXES_MARKER_LINE_LENGTH)
 
         lines = []
 
@@ -359,18 +386,21 @@ class MacroWindow(QMainWindow):
 
         if add:
             l1 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_X_NAME)
-            l1.X1 = -self.axesMarkerLineLength
-            l1.X2 = self.axesMarkerLineLength
+            l1.Label = self.LINE_ORIGIN_X_NAME
+            l1.X1 = -self.AXES_MARKER_LINE_LENGTH
+            l1.X2 = self.AXES_MARKER_LINE_LENGTH
             l1.Y1 = l1.Z1 = l1.Y2 = l1.Z2 = 0
 
             l2 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Y_NAME)
-            l2.Y1 = -self.axesMarkerLineLength
-            l2.Y2 = self.axesMarkerLineLength
+            l2.Label = self.LINE_ORIGIN_Y_NAME
+            l2.Y1 = -self.AXES_MARKER_LINE_LENGTH
+            l2.Y2 = self.AXES_MARKER_LINE_LENGTH
             l2.X1 = l2.Z1 = l2.X2 = l2.Z2 = 0
 
             l3 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Z_NAME)
-            l3.Z1 = -self.axesMarkerLineLength
-            l3.Z2 = self.axesMarkerLineLength
+            l3.Label = self.LINE_ORIGIN_Z_NAME
+            l3.Z1 = -self.AXES_MARKER_LINE_LENGTH
+            l3.Z2 = self.AXES_MARKER_LINE_LENGTH
             l3.X1 = l3.Y1 = l3.X2 = l3.Y2 = 0
 
             self.addToGroup((l1, l2, l3), self.GROUP_LABEL_ORIGIN_LINES)
@@ -384,18 +414,15 @@ class MacroWindow(QMainWindow):
 
         for objParams in objsParams:
             obj = objParams.object
+            obj.ViewObject.Selectable = False
+            obj.ViewObject.LineWidth = self.markerLineWidth
 
             if obj.Label == self.LINE_ORIGIN_X_NAME:
                 obj.ViewObject.LineColor = (1.0, 0.0, 0.0, 0.0)
-                obj.ViewObject.LineWidth = self.markerLineWidth
-
             elif obj.Label == self.LINE_ORIGIN_Y_NAME:
                 obj.ViewObject.LineColor = (0.0, 1.0, 0.0, 0.0)
-                obj.ViewObject.LineWidth = self.markerLineWidth
-
             elif obj.Label == self.LINE_ORIGIN_Z_NAME:
                 obj.ViewObject.LineColor = (0.0, 0.0, 1.0, 0.0)
-                obj.ViewObject.LineWidth = self.markerLineWidth
 # ==================================================================================================
     def getGroup(self, groupLabel, autoCreate):
 
@@ -423,7 +450,7 @@ class MacroWindow(QMainWindow):
 
         self.removeObjectsByLabel(groupLabel)
 # ==================================================================================================
-    def addToGroup(self, objs, groupLabel) -> None:
+    def addToGroup(self, objs: tuple[Any], groupLabel: str) -> None:
 
         group = self.getGroup(groupLabel, True)
 
@@ -451,98 +478,109 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def btnAddCenterMarkClicked(self) -> None:
 
-        self.ui.statusBar.clearMessage()
+        try:
+            self.ui.statusBar.clearMessage()
 
-        self.selectedObjsParams = self.getSelectedObjects(extended=True)
+            self.selectedObjsParams = self.getSelectedObjects(extended=True)
 
-        if len(self.selectedObjsParams) == 0:
-            self.ui.statusBar.showMessage("Nothing selected.")
-            return
+            if len(self.selectedObjsParams) == 0:
+                self.ui.statusBar.showMessage("Nothing selected.")
+                return
 
-        for objParams in self.selectedObjsParams:
-            obj = objParams.object
+            for objParams in self.selectedObjsParams:
+                obj = objParams.object
 
-            l1, l2, l3 = self.drawCenterMark(0, self.getCenter(obj), (0, 0, 0), obj.Label, True)
+                l1, l2, l3 = self.drawCenterMark(0, self.getCenter(obj), (0, 0, 0), obj.Label, True)
 
-            l1.ViewObject.LineColor = self.markerLineColor
-            l2.ViewObject.LineColor = self.markerLineColor
-            l3.ViewObject.LineColor = self.markerLineColor
+                l1.ViewObject.LineColor = self.markerLineColor
+                l2.ViewObject.LineColor = self.markerLineColor
+                l3.ViewObject.LineColor = self.markerLineColor
 
-            self.addToGroup((l1, l2, l3), self.GROUP_LABEL_CENTER_LINES)
+                self.addToGroup((l1, l2, l3), self.GROUP_LABEL_CENTER_LINES)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnToggleOriginMarkClicked(self) -> None:
 
-        group = self.getGroup(self.GROUP_LABEL_ORIGIN_LINES, False)
+        try:
+            group = self.getGroup(self.GROUP_LABEL_ORIGIN_LINES, False)
 
-        if group == None:
-            self.addRemoveOriginMark(True)
-        else:
-            self.addRemoveOriginMark(False)
+            if group == None:
+                self.addRemoveOriginMark(True)
+            else:
+                self.addRemoveOriginMark(False)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def sldReleased(self) -> None:
 
-        prevTransform = self.transformActive
+        try:
+            prevTransform = self.transformActive
 
-        # Transformation has ended.
-        self.transformActive = False
+            # Transformation has ended.
+            self.transformActive = False
 
-        self.ui.sldTranslateX.setValue(0)
-        self.ui.sldTranslateY.setValue(0)
-        self.ui.sldTranslateZ.setValue(0)
+            self.ui.sldTranslateX.setValue(0)
+            self.ui.sldTranslateY.setValue(0)
+            self.ui.sldTranslateZ.setValue(0)
 
-        self.updateTranslationLabels()
+            self.updateTranslationLabels()
 
-        if not prevTransform:
-            return
+            if not prevTransform:
+                return
 
-        for objParams in self.selectedObjsParams:
-            if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
-                # Restore the status of bounding boxes.
-                objParams.object.ViewObject.BoundingBox = objParams.boundingBoxEnabled
+            for objParams in self.selectedObjsParams:
+                if self.ui.chkBoundingBoxes.isChecked() and objParams.boundingBoxEnabled is not None:
+                    # Restore the status of bounding boxes.
+                    objParams.object.ViewObject.BoundingBox = objParams.boundingBoxEnabled
 
-            if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
-                # Restore the line colors.
-                objParams.object.ViewObject.LineColor = objParams.lineColor
+                if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
+                    # Restore the line colors.
+                    objParams.object.ViewObject.LineColor = objParams.lineColor
 
-        if self.drawStyleRevertAction is not None:
-            self.drawStyleRevertAction.trigger()
+            if self.drawStyleRevertAction is not None:
+                self.drawStyleRevertAction.trigger()
 
-        self.removeGroup(self.GROUP_LABEL_TEMP_CENTER_LINES)
+            self.removeGroup(self.GROUP_LABEL_TEMP_CENTER_LINES)
 
-        # Clear snapping related highlighting.
-        self.formatOriginMark()
+            # Clear snapping related highlighting.
+            self.formatOriginMark()
 
-        # Clear snapping related highlighting.
-        for centerLine in self.centerLinesParams:
-            lineCL = centerLine.object
-            if not self.isOriginLine(lineCL.Label):
-                lineCL.ViewObject.LineColor = self.markerLineColor
-                lineCL.ViewObject.LineWidth = self.markerLineWidth
+            # Clear snapping related highlighting.
+            for centerLine in self.centerLinesParams:
+                lineCL = centerLine.object
+                if not self.isOriginLine(lineCL.Label):
+                    lineCL.ViewObject.LineColor = self.markerLineColor
+                    lineCL.ViewObject.LineWidth = self.markerLineWidth
 
-        if self.ui.chkAutoRecompute.isChecked():
-            App.ActiveDocument.recompute()
+            if self.ui.chkAutoRecompute.isChecked():
+                App.ActiveDocument.recompute()
 
-        App.ActiveDocument.commitTransaction()
+            App.ActiveDocument.commitTransaction()
 
-        self.ui.statusBar.clearMessage()
+            self.ui.statusBar.clearMessage()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnResetTransformsClicked(self) -> None:
 
-        self.selectedObjsParams = self.getSelectedObjects(extended=False)
+        try:
+            self.selectedObjsParams = self.getSelectedObjects(extended=False)
 
-        if len(self.selectedObjsParams) == 0:
-            return
+            if len(self.selectedObjsParams) == 0:
+                return
 
-        self.ui.statusBar.clearMessage()
+            self.ui.statusBar.clearMessage()
 
-        App.ActiveDocument.openTransaction()
+            App.ActiveDocument.openTransaction()
 
-        for objParam in self.selectedObjsParams:
-            objParam.object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(App.Vector(0, 0, 0), 0))
+            for objParam in self.selectedObjsParams:
+                objParam.object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(App.Vector(0, 0, 0), 0))
 
-        App.ActiveDocument.commitTransaction()
-
-        App.ActiveDocument.recompute()
+            App.ActiveDocument.commitTransaction()
+            App.ActiveDocument.recompute()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def updateTranslationLabels(self) -> None:
 
@@ -672,40 +710,53 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def btnOrthographicClicked(self) -> None:
 
-        self.ui.statusBar.clearMessage()
-
-        Gui.activeDocument().activeView().setCameraType("Orthographic")
+        try:
+            self.ui.statusBar.clearMessage()
+            Gui.activeDocument().activeView().setCameraType("Orthographic")
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnPerspectiveClicked(self) -> None:
 
-        self.ui.statusBar.clearMessage()
-
-        Gui.activeDocument().activeView().setCameraType("Perspective")
+        try:
+            self.ui.statusBar.clearMessage()
+            Gui.activeDocument().activeView().setCameraType("Perspective")
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnDefaultLineColorClicked(self) -> None:
 
-        self.ui.statusBar.clearMessage()
+        try:
+            self.ui.statusBar.clearMessage()
 
-        r = self.markerLineColor[0] * 255
-        g = self.markerLineColor[1] * 255
-        b = self.markerLineColor[2] * 255
+            r = self.markerLineColor[0] * 255
+            g = self.markerLineColor[1] * 255
+            b = self.markerLineColor[2] * 255
 
-        color = QColorDialog.getColor(QColor(r, g, b), None)
+            color = QColorDialog.getColor(QColor(r, g, b), None)
 
-        if color.isValid():
-            r = color.red()
-            g = color.green()
-            b = color.blue()
+            if color.isValid():
+                r = color.red()
+                g = color.green()
+                b = color.blue()
 
-            self.markerLineColor = (r / 255.0, g / 255.0, b / 255.0, 0.0)
+                self.markerLineColor = (r / 255.0, g / 255.0, b / 255.0, 0.0)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnTransparencyEnableClicked(self):
 
-        self.setTransparencies(self.ui.sldTransparency.value())
+        try:
+            self.setTransparencies(self.ui.sldTransparency.value())
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def btnTransparencyDisableClicked(self):
 
-        self.setTransparencies(0)
+        try:
+            self.setTransparencies(0)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
     def setTransparencies(self, value):
 
