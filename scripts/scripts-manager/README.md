@@ -20,6 +20,9 @@ class CustomScript():
 # Screenshots
 ![screenshot-1](doc/images/screenshot-1.png?raw=true "Screenshot 1")
 
+## gui-add-grid
+![gui-add-grid](scripts/gui-add-grid/doc/images/screenshot-1.png?raw=true "gui-add-grid")
+
 # Tips
 To move objects to a group, select the group and use "select-label" script to save the group's label.
 Next, select the objects and run "set-group-from-label-selection" to move the objects to the previously specified group.
