@@ -23,6 +23,7 @@
 *                                                                         *
 ***************************************************************************
 '''
+import FreeCAD
 import FreeCADGui
 
 from PySide import QtWidgets
@@ -66,9 +67,22 @@ class CustomScript():
 
         # From the 3D view.
         if str(activeView) == "View3DInventor":
-            backgroundColor = "Transparent"
-            # backgroundColor = "White"
-            # backgroundColor = "Black"
+            backgroundColor = self.parent.optionsDialogExc("single",
+                                                           "Background color:",
+                                                           ["Transparent",
+                                                            "Black",
+                                                            "White",
+                                                            "Current-Background"])[0]
+
+            if backgroundColor == "Current-Background":
+                viewParams = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/View")
+                # backgroundType = viewParams.GetInt("BackgroundType", 0)
+                backgroundColorInt = viewParams.GetUnsigned("BackgroundColor", 0)
+                r = ((backgroundColorInt >> 24) & 0xFF)
+                g = ((backgroundColorInt >> 16) & 0xFF)
+                b = ((backgroundColorInt >> 8) & 0xFF)
+                # a = (backgroundColorInt & 0xFF)
+                backgroundColor = f"#{r:02x}{g:02x}{b:02x}"
 
             sizex, sizey = activeView.getSize()
             activeView.saveImage(fName, sizex, sizey, backgroundColor)
