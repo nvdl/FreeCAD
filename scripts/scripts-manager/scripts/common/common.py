@@ -26,7 +26,7 @@
 import FreeCAD
 import FreeCADGui
 # ==============================================================================
-def getSelection(extended):
+def getSelection(extended: bool) -> "list[FreeCADGui.SelectionObject] | list[FreeCAD.DocumentObject]":
 
     if extended:
         selObjs = FreeCADGui.Selection.getSelectionEx()
@@ -35,7 +35,32 @@ def getSelection(extended):
 
     return selObjs
 # ==============================================================================
-def getAllObjects():
+def getAllObjects() -> list[FreeCAD.DocumentObject]:
 
     return FreeCAD.ActiveDocument.Objects
+# ==============================================================================
+def getGroup(groupLabel: str, autoCreate: bool) -> FreeCAD.DocumentObject:
+
+    group = None
+
+    selection = FreeCAD.ActiveDocument.getObjectsByLabel(groupLabel)
+
+    if len(selection):
+        for obj in selection:
+            if obj.TypeId == "App::DocumentObjectGroup":
+                group = obj
+                break
+    else:
+        if autoCreate:
+            group = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroup", groupLabel)
+
+    return group
+# ==============================================================================
+def addToGroup(objs: tuple[FreeCAD.DocumentObject], groupLabel: str) -> None:
+
+    group = getGroup(groupLabel, True)
+    assert group is not None
+
+    for obj in objs:
+        group.addObject(obj)
 # ==============================================================================

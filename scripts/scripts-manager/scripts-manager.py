@@ -49,7 +49,7 @@ import os
 import sys
 import pathlib
 import importlib
-from traceback import format_exc, print_exc
+from traceback import format_exc
 
 from PySide.QtGui import *
 from PySide.QtCore import *
@@ -76,143 +76,168 @@ class MacroWindow(QMainWindow):
 
     def __init__(self, parent) -> None:
 
-        super(MacroWindow, self).__init__(parent)
+        try:
+            super(MacroWindow, self).__init__(parent)
 
-        scriptDir = os.path.dirname(os.path.realpath(__file__))
-        # self.consoleMessage(f"{scriptDir=}\n")
+            scriptDir = os.path.dirname(os.path.realpath(__file__))
+            # self.consoleMessage(f"{scriptDir=}\n")
 
-        scriptsDir = pathlib.Path(scriptDir).joinpath("scripts")
-        # self.consoleMessage(f"{scriptsDir=}\n")
+            scriptsDir = pathlib.Path(scriptDir).joinpath("scripts")
+            # self.consoleMessage(f"{scriptsDir=}\n")
 
-        if scriptsDir not in sys.path:
-            sys.path.append(str(scriptsDir))
+            if scriptsDir not in sys.path:
+                sys.path.append(str(scriptsDir))
 
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
+            self.ui = Ui_MainWindow()
+            self.ui.setupUi(self)
 
-        self.setWindowTitle(f"{__title__} v{__version__}")
+            self.setWindowTitle(f"{__title__} v{__version__}")
 
-        self.importedScripts = {}
+            self.importedScripts = {}
 
-        self.scriptsData: dict[str, str] = {}
+            self.scriptsData: dict[str, str] = {}
 
-        for path in pathlib.Path(scriptsDir).iterdir():
-            if path.is_dir():
-                pathName = path.name
+            for path in pathlib.Path(scriptsDir).iterdir():
+                if path.is_dir():
+                    pathName = path.name
 
-                # Skip directories starting with special characters.
-                if pathName[0] in [".", "_"]:
-                    continue
+                    # Skip directories starting with special characters.
+                    if pathName[0] in [".", "_"]:
+                        continue
 
-                # self.consoleMessage(f"{path=}\n")
+                    # self.consoleMessage(f"{path=}\n")
 
-                # Load/reload all ".py" files.
-                for child in path.iterdir():
-                    if child.suffix == ".py":
-                        modulePath = pathName + "." + child.stem
-                        # self.consoleMessage(f"{modulePath=}\n")
+                    # Load/reload all ".py" files.
+                    for child in path.iterdir():
+                        if child.suffix == ".py":
+                            modulePath = pathName + "." + child.stem
+                            # self.consoleMessage(f"{modulePath=}\n")
 
-                        if modulePath in sys.modules:
-                            # self.consoleMessage(f"Reloading {modulePath=}.\n")
-                            del sys.modules[modulePath]
-                            importlib.import_module(modulePath)
-                            # importlib.reload(sys.modules[modulePath])
-                        else:
-                            # self.consoleMessage(f"Loading {modulePath=}.\n")
-                            try:
+                            if modulePath in sys.modules:
+                                # self.consoleMessage(f"Reloading {modulePath=}.\n")
+                                del sys.modules[modulePath]
                                 importlib.import_module(modulePath)
-                            except:
-                                self.consoleError(f"Failed to load \"{modulePath}\".\n")
-                                print_exc()
-                                continue
+                                # importlib.reload(sys.modules[modulePath])
+                            else:
+                                # self.consoleMessage(f"Loading {modulePath=}.\n")
+                                try:
+                                    importlib.import_module(modulePath)
+                                except:
+                                    self.consoleError(f"Failed to load \"{modulePath}\".\n")
 
-                modulePath = pathName + ".custom_script"
-                # self.consoleMessage(f"{modulePath=}\n")
+                                    QMessageBox.critical(self, "Module loading failed",
+                                                         f"Failed to load \"{modulePath}\".")
 
-                if modulePath in sys.modules:
-                    importedModule = sys.modules[modulePath]
-                    # self.consoleMessage(f"{importedModule=}\n")
+                                    QMessageBox.critical(self, "Exception", format_exc())
+                                    continue
 
-                    if hasattr(importedModule, "CustomScript"):
-                        self.importedScripts[pathName] = (importedModule, modulePath)
+                    modulePath = pathName + ".custom_script"
+                    # self.consoleMessage(f"{modulePath=}\n")
+
+                    if modulePath in sys.modules:
+                        importedModule = sys.modules[modulePath]
+                        # self.consoleMessage(f"{importedModule=}\n")
+
+                        if hasattr(importedModule, "CustomScript"):
+                            self.importedScripts[pathName] = (importedModule, modulePath)
+                        else:
+                            self.consoleError(f"{importedModule} has no \"CustomScript\" class.\n")
                     else:
-                        self.consoleError(f"{importedModule} has no \"CustomScript\" class.\n")
-                else:
-                    # self.consoleMessage(f"\"{modulePath}\" not found.\n")
-                    pass
+                        # self.consoleMessage(f"\"{modulePath}\" not found.\n")
+                        pass
 
-        self.importedScripts = dict(sorted(self.importedScripts.items()))
+            self.importedScripts = dict(sorted(self.importedScripts.items()))
 
-        for pathName in self.importedScripts:
-            self.ui.lstScripts.addItem(pathName)
+            for pathName in self.importedScripts:
+                self.ui.lstScripts.addItem(pathName)
 
-        self.ui.chkAlwaysOnTop.clicked.connect(self.chkAlwaysOnTopClicked)
+            self.ui.chkAlwaysOnTop.clicked.connect(self.chkAlwaysOnTopClicked)
 
-        self.ui.btnRunScript.clicked.connect(self.btnRunScriptClicked)
-        self.ui.btnAboutScript.clicked.connect(self.btnAboutScriptClicked)
-        self.ui.btnClearFilter.clicked.connect(self.btnClearFilterClicked)
+            self.ui.btnRunScript.clicked.connect(self.btnRunScriptClicked)
+            self.ui.btnAboutScript.clicked.connect(self.btnAboutScriptClicked)
+            self.ui.btnClearFilter.clicked.connect(self.btnClearFilterClicked)
 
-        self.ui.lstScripts.itemDoubleClicked.connect(self.lstScriptsItemDoubleClicked)
-        self.ui.lneFilter.textChanged.connect(self.lneFilterTextChanged)
+            self.ui.lstScripts.itemDoubleClicked.connect(self.lstScriptsItemDoubleClicked)
+            self.ui.lneFilter.textChanged.connect(self.lneFilterTextChanged)
 
-        self.ui.txtAbout.setText("Right click, copy the URL and paste it into your browser "
-                                 "to access the Git repository.<br><br>"
-                                 "<a href=\"https://github.com/nvdl/FreeCAD\">https://github.com/nvdl/FreeCAD</a>")
+            self.ui.txtAbout.setText("Right click, copy the URL and paste it into your browser "
+                                     "to access the Git repository.<br><br>"
+                                     "<a href=\"https://github.com/nvdl/FreeCAD\">https://github.com/nvdl/FreeCAD</a>")
 
-        self.ui.txtAbout.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
-
-        self.ui.btnClearFilter.setStyleSheet("text-align: left")
-
-        self.chkAlwaysOnTopClicked()
+            self.ui.txtAbout.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
+            self.ui.btnClearFilter.setStyleSheet("text-align: left")
+            self.ui.lneFilter.setFocus()
+            self.chkAlwaysOnTopClicked()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def chkAlwaysOnTopClicked(self) -> None:
 
-        flags = self.windowFlags()
+        try:
+            flags = self.windowFlags()
 
-        if self.ui.chkAlwaysOnTop.isChecked():
-            self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
-        else:
-            self.setWindowFlags(flags & (~Qt.WindowStaysOnTopHint))
+            if self.ui.chkAlwaysOnTop.isChecked():
+                self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
+            else:
+                self.setWindowFlags(flags & (~Qt.WindowStaysOnTopHint))
 
-        self.show()
+            self.show()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def btnRunScriptClicked(self):
 
-        currentItem = self.ui.lstScripts.currentItem()
+        try:
+            currentItem = self.ui.lstScripts.currentItem()
 
-        if currentItem is not None:
-            self.runScript(currentItem.text())
+            if currentItem is not None:
+                self.runScript(currentItem.text())
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def btnAboutScriptClicked(self):
 
-        currentItem = self.ui.lstScripts.currentItem()
+        try:
+            currentItem = self.ui.lstScripts.currentItem()
 
-        if currentItem is not None:
-            name = currentItem.text()
-            importedScript = self.getScript(name)
-            if hasattr(importedScript, "about"):
-                aboutStr = importedScript.about()
-            else:
-                aboutStr = "No information available."
+            if currentItem is not None:
+                name = currentItem.text()
+                importedScript = self.getScript(name)
+                if hasattr(importedScript, "about"):
+                    aboutStr = importedScript.about()
+                else:
+                    aboutStr = "No information available."
 
-            self.messageBoxInformation(f"Script: {name}", aboutStr)
+                self.messageBoxInformation(f"Script: {name}", aboutStr)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def btnClearFilterClicked(self):
 
-        self.ui.lneFilter.clear()
+        try:
+            self.ui.lneFilter.clear()
+            self.ui.lneFilter.setFocus()
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def lstScriptsItemDoubleClicked(self, item) -> None:
 
-        self.runScript(item.text())
+        try:
+            self.runScript(item.text())
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def lneFilterTextChanged(self):
 
-        filterText = self.ui.lneFilter.text()
-        self.ui.lstScripts.clear()
+        try:
+            filterText = self.ui.lneFilter.text()
+            self.ui.lstScripts.clear()
 
-        for pathName in self.importedScripts:
-            if filterText in pathName:
-                self.ui.lstScripts.addItem(pathName)
+            for pathName in self.importedScripts:
+                if filterText in pathName:
+                    self.ui.lstScripts.addItem(pathName)
+        except:
+            QMessageBox.critical(self, "Exception", format_exc())
 # ==============================================================================
     def runScript(self, name):
 
@@ -233,7 +258,8 @@ class MacroWindow(QMainWindow):
             self.ui.btnRunScript.setStyleSheet("")
             self.ui.btnRunScript.repaint()
         else:
-            self.messageBoxInformation(f"Missing attribute in script: {name}", "\"CustomScript\" class has no \"run\" function.")
+            self.messageBoxInformation(
+                f"Missing attribute in script: {name}", "\"CustomScript\" class has no \"run\" function.")
 # ==============================================================================
     def getScript(self, name):
 
@@ -294,11 +320,23 @@ class MacroWindow(QMainWindow):
 
         return ret
 # ==============================================================================
-    def inputDialog(self, title: str, message: str):
+    def inputDialog(self, title: str, message: str, defaultText: str = ""):
 
-        text, status = QInputDialog.getText(self, title, message)
+        text, status = QInputDialog.getText(self, title, message, QLineEdit.EchoMode.Normal, defaultText)
 
         return (text, status)
+# ==============================================================================
+    def inputDialogExc(self, title: str, message: str, defaultText: str = ""):
+
+        text, status = self.inputDialog(title, message, defaultText)
+
+        if not status:
+            raise ValueError("Input canceled.")
+
+        if text == "":
+            raise ValueError("Input empty.")
+
+        return text
 # ==============================================================================
     def fileSaveDialog(self, title: str, filters: str):
 
@@ -306,25 +344,36 @@ class MacroWindow(QMainWindow):
 
         return (fName, selectedFilter)
 # ==============================================================================
-    def colorDialog(self, initialColor: tuple[float, float, float]) -> tuple[float, float, float, bool]:
+    def colorDialog(self, title: str, initialColor: tuple[float, float, float]) -> tuple[float, float, float, bool]:
 
+        fr, fg, fb = initialColor
         status = False
 
-        r = int(initialColor[0] * 255)
-        g = int(initialColor[1] * 255)
-        b = int(initialColor[2] * 255)
+        ir: int = round(initialColor[0] * 255)
+        ig: int = round(initialColor[1] * 255)
+        ib: int = round(initialColor[2] * 255)
 
-        color = QColorDialog.getColor(QColor(r, g, b), None)
+        color = QColorDialog.getColor(QColor(ir, ig, ib), self, title)
 
         if color.isValid():
-            r = color.red()
-            g = color.green()
-            b = color.blue()
+            fr, fg, fb, _ = color.getRgbF()
             status = True
 
-        return (r, g, b, status)
+        return (fr, fg, fb, status)
 # ==============================================================================
-    def optionsDialog(self, mode, prompt, options) -> tuple[list[str], bool]:
+    def colorDialogExc(self, title: str, initialColor: tuple[float, float, float]) -> tuple[float, float, float]:
+
+        fr, fg, fb, status = self.colorDialog(title, initialColor)
+
+        if not status:
+            raise ValueError("Input canceled.")
+
+        return (fr, fg, fb)
+# ==============================================================================
+    def optionsDialog(self, mode: str, prompt: str, options: list[str]) -> tuple[list[str], bool]:
+        """
+        Acceptable value for "mode" are "single" or "multiple".
+        """
 
         winOptions = WindowOptions(self, mode, prompt, options)
 
@@ -333,6 +382,21 @@ class MacroWindow(QMainWindow):
             QThread.msleep(50)
 
         return winOptions.options()
+# ==============================================================================
+    def optionsDialogExc(self, mode: str, prompt: str, options: list[str]) -> list[str]:
+
+        winOptions = WindowOptions(self, mode, prompt, options)
+
+        while winOptions.isVisible():
+            QApplication.instance().processEvents()
+            QThread.msleep(50)
+
+        optionsSelected, statusSelection = winOptions.options()
+
+        if not statusSelection:
+            raise ValueError("Input canceled.")
+
+        return optionsSelected
 # ==============================================================================
     def statusMessage(self, message) -> None:
 
@@ -445,7 +509,7 @@ class Ui_MainWindow(object):
 # ==============================================================================
 class WindowOptions(QMainWindow):
 
-    def __init__(self, parent: QMainWindow, mode, prompt, options) -> None:
+    def __init__(self, parent: QMainWindow, mode: str, prompt: str, options: list[str]) -> None:
 
         super(WindowOptions, self).__init__(parent)
 
@@ -501,6 +565,8 @@ class WindowOptions(QMainWindow):
         for option in options:
             self.lstOptions.addItem(option)
 
+        self.lstOptions.setCurrentRow(0)
+
         self.optionsSelected: list[str] = []
         self.statusSelection = False
 
@@ -517,11 +583,11 @@ class WindowOptions(QMainWindow):
 
         self.optionsSelected = self.selectedItems()
         self.statusSelection = True
-
         self.hide()
 # ==============================================================================
     def btnCancelClicked(self):
 
+        self.statusSelection = False
         self.hide()
 # ==============================================================================
     def selectedItems(self):
