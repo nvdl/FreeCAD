@@ -48,11 +48,10 @@ from traceback import format_exc
 import FreeCAD
 import FreeCADGui
 import Part
-import Draft
 # ==================================================================================================
 __title__ = "Transform"
-__version__ = "2.8"
-__date__ = "10/05/2025"
+__version__ = "2.9"
+__date__ = "21/01/2026"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -73,6 +72,7 @@ class ObjectParameters:
     base: "FreeCAD.Vector"
     center: "FreeCAD.Vector"
     lineColor: tuple[float] | None
+    lineWidth: float | None
     boundingBoxEnabled: bool | None
 # ==================================================================================================
 class MacroWindow(QMainWindow):
@@ -84,16 +84,26 @@ class MacroWindow(QMainWindow):
         self.GROUP_LABEL_CENTER_LINES = "lines_center"
         self.GROUP_LABEL_TEMP_CENTER_LINES = "lines_temp_center"
         self.GROUP_LABEL_ORIGIN_LINES = "lines_origin"
+        self.GROUP_LABEL_GRID_LINES = "lines_grid"
 
         self.LINE_CENTER_NAME_PREFIX = "line_center"
-        self.LINE_CENTER_X_LABEL_PREFIX = f"{self.LINE_CENTER_NAME_PREFIX}_cx"
-        self.LINE_CENTER_Y_LABEL_PREFIX = f"{self.LINE_CENTER_NAME_PREFIX}_cy"
-        self.LINE_CENTER_Z_LABEL_PREFIX = f"{self.LINE_CENTER_NAME_PREFIX}_cz"
+        self.LINE_CENTER_LABEL_PREFIX = self.LINE_CENTER_NAME_PREFIX
+        self.LINE_CENTER_X_LABEL_PREFIX = f"{self.LINE_CENTER_LABEL_PREFIX}_cx"
+        self.LINE_CENTER_Y_LABEL_PREFIX = f"{self.LINE_CENTER_LABEL_PREFIX}_cy"
+        self.LINE_CENTER_Z_LABEL_PREFIX = f"{self.LINE_CENTER_LABEL_PREFIX}_cz"
+
+        self.LINE_GRID_LABEL_PREFIX = "line_grid"
+        self.LINE_GRID_X_LABEL_PREFIX = f"{self.LINE_GRID_LABEL_PREFIX}_x"
+        self.LINE_GRID_Y_LABEL_PREFIX = f"{self.LINE_GRID_LABEL_PREFIX}_y"
+        self.LINE_GRID_Z_LABEL_PREFIX = f"{self.LINE_GRID_LABEL_PREFIX}_z"
 
         self.LINE_ORIGIN_NAME_SUFFIX = "origin"
         self.LINE_ORIGIN_X_NAME = f"{self.LINE_CENTER_X_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
         self.LINE_ORIGIN_Y_NAME = f"{self.LINE_CENTER_Y_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
         self.LINE_ORIGIN_Z_NAME = f"{self.LINE_CENTER_Z_LABEL_PREFIX}_{self.LINE_ORIGIN_NAME_SUFFIX}"
+        self.LINE_ORIGIN_X_LABEL = self.LINE_ORIGIN_X_NAME
+        self.LINE_ORIGIN_Y_LABEL = self.LINE_ORIGIN_Y_NAME
+        self.LINE_ORIGIN_Z_LABEL = self.LINE_ORIGIN_Z_NAME
 
         self.AXES_MARKER_LINE_LENGTH = 500
 
@@ -238,6 +248,7 @@ class MacroWindow(QMainWindow):
                                        obj.Placement.Base,
                                        self.getCenter(obj),
                                        obj.ViewObject.LineColor if hasattr(obj.ViewObject, "LineColor") else None,
+                                       obj.ViewObject.LineWidth if hasattr(obj.ViewObject, "LineWidth") else None,
                                        obj.ViewObject.BoundingBox if hasattr(obj.ViewObject, "BoundingBox") else None)
                       for obj in objects]
 
@@ -253,7 +264,7 @@ class MacroWindow(QMainWindow):
         objs = []
 
         for obj in objs2:
-            # App.Console.PrintMessage(f"Type ID: \"{obj.TypeId}\".\n")
+            # FreeCAD.Console.PrintMessage(f"Type ID: \"{obj.TypeId}\".\n")
 
             if extended:
                 obj = obj.Object
@@ -264,14 +275,14 @@ class MacroWindow(QMainWindow):
                         if hasattr(subObj, "Placement"):
                             objs.append(subObj)
                         else:
-                            App.Console.PrintMessage(f"Not selecting \"{subObj.Label}\".\n")
+                            FreeCAD.Console.PrintMessage(f"Not selecting \"{subObj.Label}\".\n")
                     except:
-                        App.Console.PrintMessage(f"Exception; cannot select \"{subObj.Label}\".\n")
+                        FreeCAD.Console.PrintMessage(f"Exception; cannot select \"{subObj.Label}\".\n")
             else:
                 if hasattr(obj, "Placement"):
                     objs.append(obj)
                 else:
-                    App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
+                    FreeCAD.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
 
         selObjs = self.getObjectsParameters(objs)
 
@@ -280,7 +291,7 @@ class MacroWindow(QMainWindow):
     def sldPressed(self) -> None:
 
         try:
-            App.ActiveDocument.openTransaction()
+            FreeCAD.ActiveDocument.openTransaction()
 
             self.centerLines = []
 
@@ -299,8 +310,9 @@ class MacroWindow(QMainWindow):
                 if self.ui.chkHighlight.isChecked() and objParams.lineColor is not None:
                     objParams.object.ViewObject.LineColor = self.highlightLineColor
 
-            self.centerLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
-            self.centerLinesParams += self.getGroupObjects(self.GROUP_LABEL_ORIGIN_LINES)
+            self.snapLinesParams = self.getGroupObjects(self.GROUP_LABEL_CENTER_LINES)
+            self.snapLinesParams += self.getGroupObjects(self.GROUP_LABEL_ORIGIN_LINES)
+            self.snapLinesParams += self.getGroupObjects(self.GROUP_LABEL_GRID_LINES)
 
             # Transformation has started.
             self.transformActive = True
@@ -329,9 +341,10 @@ class MacroWindow(QMainWindow):
                 self.centerLines.append(lines)
                 self.addToGroup(lines, self.GROUP_LABEL_TEMP_CENTER_LINES)
 # ==================================================================================================
-    # Draw and move center marks.
-
     def drawCenterMark(self, i, p1, offset, objectLabel, add) -> list:
+        """
+        Draw and move center marks.
+        """
 
         dx = offset[0]
         dy = offset[1]
@@ -360,7 +373,7 @@ class MacroWindow(QMainWindow):
 
         for index, labelPrefix, start, end in linesSpecs:
             if add:
-                line = App.ActiveDocument.addObject("Part::Line", self.LINE_CENTER_NAME_PREFIX)
+                line = FreeCAD.ActiveDocument.addObject("Part::Line", self.LINE_CENTER_NAME_PREFIX)
                 line.ViewObject.LineColor = self.markerLineColor
                 line.ViewObject.LineWidth = self.markerLineWidth
 
@@ -385,20 +398,20 @@ class MacroWindow(QMainWindow):
     def addRemoveOriginMark(self, add) -> None:
 
         if add:
-            l1 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_X_NAME)
-            l1.Label = self.LINE_ORIGIN_X_NAME
+            l1 = FreeCAD.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_X_NAME)
+            l1.Label = self.LINE_ORIGIN_X_LABEL
             l1.X1 = -self.AXES_MARKER_LINE_LENGTH
             l1.X2 = self.AXES_MARKER_LINE_LENGTH
             l1.Y1 = l1.Z1 = l1.Y2 = l1.Z2 = 0
 
-            l2 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Y_NAME)
-            l2.Label = self.LINE_ORIGIN_Y_NAME
+            l2 = FreeCAD.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Y_NAME)
+            l2.Label = self.LINE_ORIGIN_Y_LABEL
             l2.Y1 = -self.AXES_MARKER_LINE_LENGTH
             l2.Y2 = self.AXES_MARKER_LINE_LENGTH
             l2.X1 = l2.Z1 = l2.X2 = l2.Z2 = 0
 
-            l3 = App.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Z_NAME)
-            l3.Label = self.LINE_ORIGIN_Z_NAME
+            l3 = FreeCAD.ActiveDocument.addObject("Part::Line", self.LINE_ORIGIN_Z_NAME)
+            l3.Label = self.LINE_ORIGIN_Z_LABEL
             l3.Z1 = -self.AXES_MARKER_LINE_LENGTH
             l3.Z2 = self.AXES_MARKER_LINE_LENGTH
             l3.X1 = l3.Y1 = l3.X2 = l3.Y2 = 0
@@ -417,18 +430,18 @@ class MacroWindow(QMainWindow):
             obj.ViewObject.Selectable = False
             obj.ViewObject.LineWidth = self.markerLineWidth
 
-            if obj.Label == self.LINE_ORIGIN_X_NAME:
+            if obj.Label == self.LINE_ORIGIN_X_LABEL:
                 obj.ViewObject.LineColor = (1.0, 0.0, 0.0, 0.0)
-            elif obj.Label == self.LINE_ORIGIN_Y_NAME:
+            elif obj.Label == self.LINE_ORIGIN_Y_LABEL:
                 obj.ViewObject.LineColor = (0.0, 1.0, 0.0, 0.0)
-            elif obj.Label == self.LINE_ORIGIN_Z_NAME:
+            elif obj.Label == self.LINE_ORIGIN_Z_LABEL:
                 obj.ViewObject.LineColor = (0.0, 0.0, 1.0, 0.0)
 # ==================================================================================================
     def getGroup(self, groupLabel, autoCreate):
 
         group = None
 
-        selection = App.ActiveDocument.getObjectsByLabel(groupLabel)
+        selection = FreeCAD.ActiveDocument.getObjectsByLabel(groupLabel)
 
         if len(selection):
             for obj in selection:
@@ -437,7 +450,7 @@ class MacroWindow(QMainWindow):
                     break
         else:
             if autoCreate:
-                group = App.ActiveDocument.addObject("App::DocumentObjectGroup", groupLabel)
+                group = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroup", groupLabel)
 
         return group
 # ==================================================================================================
@@ -450,9 +463,10 @@ class MacroWindow(QMainWindow):
 
         self.removeObjectsByLabel(groupLabel)
 # ==================================================================================================
-    def addToGroup(self, objs: tuple[Any], groupLabel: str) -> None:
+    def addToGroup(self, objs: tuple[Any] | list[Any], groupLabel: str) -> None:
 
         group = self.getGroup(groupLabel, True)
+        assert group
 
         for obj in objs:
             group.addObject(obj)
@@ -461,7 +475,7 @@ class MacroWindow(QMainWindow):
 
         group = self.getGroup(groupLabel, False)
 
-        if group == None:
+        if group is None:
             return []
 
         objs = []
@@ -470,7 +484,7 @@ class MacroWindow(QMainWindow):
             if type(obj.Shape) is not Part.Face:
                 objs.append(obj)
             else:
-                App.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
+                FreeCAD.Console.PrintMessage(f"Not selecting \"{obj.Label}\".\n")
 
         groupObjs = self.getObjectsParameters(objs)
 
@@ -542,21 +556,12 @@ class MacroWindow(QMainWindow):
                 self.drawStyleRevertAction.trigger()
 
             self.removeGroup(self.GROUP_LABEL_TEMP_CENTER_LINES)
-
-            # Clear snapping related highlighting.
-            self.formatOriginMark()
-
-            # Clear snapping related highlighting.
-            for centerLine in self.centerLinesParams:
-                lineCL = centerLine.object
-                if not self.isOriginLine(lineCL.Label):
-                    lineCL.ViewObject.LineColor = self.markerLineColor
-                    lineCL.ViewObject.LineWidth = self.markerLineWidth
+            self.clearSnapHighlighting()
 
             if self.ui.chkAutoRecompute.isChecked():
-                App.ActiveDocument.recompute()
+                FreeCAD.ActiveDocument.recompute()
 
-            App.ActiveDocument.commitTransaction()
+            FreeCAD.ActiveDocument.commitTransaction()
 
             self.ui.statusBar.clearMessage()
         except:
@@ -572,13 +577,14 @@ class MacroWindow(QMainWindow):
 
             self.ui.statusBar.clearMessage()
 
-            App.ActiveDocument.openTransaction()
+            FreeCAD.ActiveDocument.openTransaction()
 
             for objParam in self.selectedObjsParams:
-                objParam.object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(App.Vector(0, 0, 0), 0))
+                objParam.object.Placement = FreeCAD.Placement(FreeCAD.Vector(
+                    0, 0, 0), FreeCAD.Rotation(FreeCAD.Vector(0, 0, 0), 0))
 
-            App.ActiveDocument.commitTransaction()
-            App.ActiveDocument.recompute()
+            FreeCAD.ActiveDocument.commitTransaction()
+            FreeCAD.ActiveDocument.recompute()
         except:
             QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
@@ -640,14 +646,43 @@ class MacroWindow(QMainWindow):
 
             self.updateTranslationLabels()
 # ==================================================================================================
+    def clearSnapHighlighting(self) -> None:
+        """
+        Clear snapping related highlighting.
+        """
+
+        for snapLineParams in self.snapLinesParams:
+            viewObject = snapLineParams.object.ViewObject
+            viewObject.LineColor = snapLineParams.lineColor
+            viewObject.LineWidth = snapLineParams.lineWidth
+# ==================================================================================================
     def checkSnapping(self) -> None:
 
-        axisXTranslation2 = self.axisXTranslation
-        axisYTranslation2 = self.axisYTranslation
-        axisZTranslation2 = self.axisZTranslation
+        self.clearSnapHighlighting()
+
+        if (self.axisXTranslation == 0) and (self.axisYTranslation == 0) and (self.axisZTranslation == 0):
+            return
+
+        linePrefixes = {}
+
+        linePrefixes["x"] = [self.LINE_CENTER_Y_LABEL_PREFIX,
+                             self.LINE_CENTER_Z_LABEL_PREFIX,
+                             self.LINE_GRID_Y_LABEL_PREFIX,
+                             self.LINE_GRID_Z_LABEL_PREFIX]
+
+        linePrefixes["y"] = [self.LINE_CENTER_X_LABEL_PREFIX,
+                             self.LINE_CENTER_Z_LABEL_PREFIX,
+                             self.LINE_GRID_X_LABEL_PREFIX,
+                             self.LINE_GRID_Z_LABEL_PREFIX]
+
+        linePrefixes["z"] = [self.LINE_CENTER_X_LABEL_PREFIX,
+                             self.LINE_CENTER_Y_LABEL_PREFIX,
+                             self.LINE_GRID_X_LABEL_PREFIX,
+                             self.LINE_GRID_Y_LABEL_PREFIX]
 
         for objParams in self.selectedObjsParams:
-            # Use the center as a reference before moving starts (updated when the slider is released).
+            # Use the center as a reference before moving starts.
+            # The center is updated when the slider is released.
             center = objParams.center
 
             newCenterX = center[0] + self.axisXTranslation
@@ -655,55 +690,55 @@ class MacroWindow(QMainWindow):
             newCenterZ = center[2] + self.axisZTranslation
 
             snapped = False
+            objSnapLine = None
+            lblSnapLine = None
+            axis = None
+            diff = 0
 
-            # Clear snapping related highlighting.
-            self.formatOriginMark()
+            for snapLine in self.snapLinesParams:
+                objSnapLine = snapLine.object
+                lblSnapLine = objSnapLine.Label
 
-            for centerLine in self.centerLinesParams:
-                lineCL = centerLine.object
-                labelCL = lineCL.Label
+                if (self.axisXTranslation != 0) and (objSnapLine.X1 == objSnapLine.X2):
+                    axis = "x"
+                    diff = float(objSnapLine.X1) - newCenterX
 
-                # Clear snapping related highlighting.
-                if not self.isOriginLine(labelCL):
-                    lineCL.ViewObject.LineColor = self.markerLineColor
-                    lineCL.ViewObject.LineWidth = self.markerLineWidth
+                elif (self.axisYTranslation != 0) and (objSnapLine.Y1 == objSnapLine.Y2):
+                    axis = "y"
+                    diff = float(objSnapLine.Y1) - newCenterY
 
-                if abs(self.axisXTranslation) > 0:
-                    if labelCL.startswith(self.LINE_CENTER_Y_LABEL_PREFIX) or \
-                            labelCL.startswith(self.LINE_CENTER_Z_LABEL_PREFIX):
-                        xdiff = float(lineCL.X1) - newCenterX
-                        if abs(xdiff) <= self.snapDistance:
-                            axisXTranslation2 += xdiff
+                elif (self.axisZTranslation != 0) and (objSnapLine.Z1 == objSnapLine.Z2):
+                    axis = "z"
+                    diff = float(objSnapLine.Z1) - newCenterZ
+
+                else:
+                    continue
+
+                for linePrefix in linePrefixes[axis]:
+                    if lblSnapLine.startswith(linePrefix):
+                        if abs(diff) <= self.snapDistance:
                             snapped = True
-
-                elif abs(self.axisYTranslation) > 0:
-                    if labelCL.startswith(self.LINE_CENTER_X_LABEL_PREFIX) or \
-                            labelCL.startswith(self.LINE_CENTER_Z_LABEL_PREFIX):
-                        ydiff = float(lineCL.Y1) - newCenterY
-                        if abs(ydiff) <= self.snapDistance:
-                            axisYTranslation2 += ydiff
-                            snapped = True
-
-                elif abs(self.axisZTranslation) > 0:
-                    if labelCL.startswith(self.LINE_CENTER_X_LABEL_PREFIX) or \
-                            labelCL.startswith(self.LINE_CENTER_Y_LABEL_PREFIX):
-                        zdiff = float(lineCL.Z1) - newCenterZ
-                        if abs(zdiff) <= self.snapDistance:
-                            axisZTranslation2 += zdiff
-                            snapped = True
+                            break
 
                 if snapped:
                     break
 
             if snapped:
-                lineCL.ViewObject.LineColor = self.snapLineColor
-                lineCL.ViewObject.LineWidth = self.snapLineWidth
+                assert objSnapLine
+                assert lblSnapLine
+                assert axis
 
-                self.axisXTranslation = axisXTranslation2
-                self.axisYTranslation = axisYTranslation2
-                self.axisZTranslation = axisZTranslation2
+                objSnapLine.ViewObject.LineColor = self.snapLineColor
+                objSnapLine.ViewObject.LineWidth = self.snapLineWidth
 
-                message = f"\"{objParams.object.Label}\" snapped to reference line \"{labelCL}\"."
+                if axis == "x":
+                    self.axisXTranslation += diff
+                elif axis == "y":
+                    self.axisYTranslation += diff
+                elif axis == "z":
+                    self.axisZTranslation += diff
+
+                message = f"\"{objParams.object.Label}\" snapped to reference line \"{lblSnapLine}\"."
                 self.ui.statusBar.showMessage(message)
 
                 break
@@ -768,7 +803,7 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def removeObject(self, obj) -> None:
 
-        App.ActiveDocument.removeObject(obj.Name)
+        FreeCAD.ActiveDocument.removeObject(obj.Name)
 # ==================================================================================================
     def removeObjects(self, objs) -> None:
 
@@ -777,14 +812,18 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def removeObjectsByLabel(self, label) -> None:
 
-        objs = App.ActiveDocument.getObjectsByLabel(label)
+        objs = FreeCAD.ActiveDocument.getObjectsByLabel(label)
 
         for obj in objs:
             self.removeObject(obj)
 # ==================================================================================================
-    def isOriginLine(self, label):
+    # def isOriginLine(self, obj):
 
-        return label in [self.LINE_ORIGIN_X_NAME, self.LINE_ORIGIN_Y_NAME, self.LINE_ORIGIN_Z_NAME]
+    #     return obj.Label in [self.LINE_ORIGIN_X_NAME, self.LINE_ORIGIN_Y_NAME, self.LINE_ORIGIN_Z_NAME]
+# ==================================================================================================
+    # def isCenterLine(self, obj):
+
+    #     return obj.Label.startswith(self.LINE_CENTER_NAME_PREFIX)
 # ==================================================================================================
     def getCenter(self, obj) -> "FreeCAD.Vector":
 

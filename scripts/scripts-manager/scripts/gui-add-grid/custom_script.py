@@ -48,11 +48,10 @@ class CustomScript():
             strPlaneOffset = str(planeOffset).replace("-", "m").replace(".", "p")
             strPlanePos = str(planePos).replace("-", "m").replace(".", "p")
 
-            objName = f"grid_{axisType}_off_{planeType}_{strPlaneOffset}_{strPlanePos}"
-            objLabel = objName.replace("_", "-")
+            objNameLabel = f"line_grid_{axisType}_{planeType}_off_{strPlaneOffset}_pos_{strPlanePos}"
 
-            line = FreeCAD.ActiveDocument.addObject("Part::Line", objName)
-            line.Label = objLabel
+            line = FreeCAD.ActiveDocument.addObject("Part::Line", objNameLabel)
+            line.Label = objNameLabel
 
             if planeType == "xy":
                 line.Z1 = line.Z2 = planeOffset
