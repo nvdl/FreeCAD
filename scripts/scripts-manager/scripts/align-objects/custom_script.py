@@ -44,7 +44,8 @@ class CustomScript():
             return
 
         try:
-            axisType = self.parent.optionsDialogExc("single", "Axis to align along:", ["x", "y", "z"])[0]
+            alignAxes = self.parent.optionsDialogExc("single", "Axis/axes to align along:",
+                                                     ["x", "y", "z", "xy", "xz", "yz", "xyz"])[0]
         except ValueError:
             self.parent.statusMessage("Canceled or wrong input.")
             return
@@ -56,18 +57,20 @@ class CustomScript():
         for obj in selObjs[1:]:
             center = obj.Placement.Base
 
-            dx = centerParent[0] - center[0]
-            dy = centerParent[1] - center[1]
-            dz = centerParent[2] - center[2]
+            nx = center[0]
+            ny = center[1]
+            nz = center[2]
 
-            if axisType == "x":
-                newBase = FreeCAD.Vector(center[0] + dx, center[1], center[2])
-            elif axisType == "y":
-                newBase = FreeCAD.Vector(center[0], center[1] + dy, center[2])
-            elif axisType == "z":
-                newBase = FreeCAD.Vector(center[0], center[1], center[2] + dz)
+            if "x" in alignAxes:
+                nx = centerParent[0]
 
-            obj.Placement.Base = newBase
+            if "y" in alignAxes:
+                ny = centerParent[1]
+
+            if "z" in alignAxes:
+                nz = centerParent[2]
+
+            obj.Placement.Base = FreeCAD.Vector(nx, ny, nz)
 
         FreeCAD.ActiveDocument.commitTransaction()
 
