@@ -36,13 +36,15 @@ class CustomScript():
         self.GROUP_LABEL_GRID_LINES = "lines_grid"
 # ==============================================================================
     def addLine(self,
-                planeType,
-                planeSize,
-                planePos,
-                planeOffset,
-                lineColor,
-                lineWidth,
-                lineTransparency):
+                planeType: str,
+                planeSize: float,
+                planePos: float,
+                planeOffset: float,
+                lineColor: tuple[float, float, float],
+                lineWidth: float,
+                lineTransparency: int) -> None:
+
+        lineHalfLength = planeSize / 2
 
         for axisType in planeType:
             strPlaneOffset = str(planeOffset).replace("-", "m").replace(".", "p")
@@ -56,34 +58,34 @@ class CustomScript():
             if planeType == "xy":
                 line.Z1 = line.Z2 = planeOffset
                 if axisType == "x":
-                    line.X1 = -planeSize
-                    line.X2 = planeSize
+                    line.X1 = -lineHalfLength
+                    line.X2 = lineHalfLength
                     line.Y1 = line.Y2 = planePos
                 elif axisType == "y":
-                    line.Y1 = -planeSize
-                    line.Y2 = planeSize
+                    line.Y1 = -lineHalfLength
+                    line.Y2 = lineHalfLength
                     line.X1 = line.X2 = planePos
 
             elif planeType == "xz":
                 line.Y1 = line.Y2 = planeOffset
                 if axisType == "x":
-                    line.X1 = -planeSize
-                    line.X2 = planeSize
+                    line.X1 = -lineHalfLength
+                    line.X2 = lineHalfLength
                     line.Z1 = line.Z2 = planePos
                 elif axisType == "z":
-                    line.Z1 = -planeSize
-                    line.Z2 = planeSize
+                    line.Z1 = -lineHalfLength
+                    line.Z2 = lineHalfLength
                     line.X1 = line.X2 = planePos
 
             elif planeType == "yz":
                 line.X1 = line.X2 = planeOffset
                 if axisType == "y":
-                    line.Y1 = -planeSize
-                    line.Y2 = planeSize
+                    line.Y1 = -lineHalfLength
+                    line.Y2 = lineHalfLength
                     line.Z1 = line.Z2 = planePos
                 elif axisType == "z":
-                    line.Z1 = -planeSize
-                    line.Z2 = planeSize
+                    line.Z1 = -lineHalfLength
+                    line.Z2 = lineHalfLength
                     line.Y1 = line.Y2 = planePos
 
             line.ViewObject.Selectable = False
@@ -130,7 +132,7 @@ class CustomScript():
             self.parent.statusMessage("Canceled or wrong input.")
             return
 
-        lines = int(planeSize / lineSpacing)
+        lines = int(planeSize / (2 * lineSpacing))
 
         for i in range(-lines, lines + 1):
             if (i == 0) and (not linesOrigin):
