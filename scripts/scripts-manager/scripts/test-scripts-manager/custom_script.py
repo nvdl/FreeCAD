@@ -52,8 +52,30 @@ class CustomScript():
         self.parent.messageBoxWarning(title="Warning", message="Warning")
         self.parent.messageBoxCritical(title="Critical", message="Critical")
 
-        retColor: tuple[float, float, float, bool] = self.parent.colorDialog(initialColor=(1, 1, 1))
+        retColor: tuple[float, float, float, bool] = self.parent.colorDialog(title="Color", initialColor=(1, 1, 1))
         self.parent.messageBoxInformation(title="Information", message=str(retColor))
+
+        status = self.parent.messageBoxYesNo(title="Yes or No?", message="No or Yes?")
+        self.parent.messageBoxInformation(title="Yes or Yes?", message=str(status))
+
+        text, status = self.parent.inputDialog(title="Input", message="Input:", defaultText="42")
+        self.parent.messageBoxInformation(title="Input", message=text)
+
+        ret, status = self.parent.optionsDialog(mode="single", prompt="Single selection mode:",
+                                                options=["1", "2", "3"])
+
+        if status:
+            self.parent.messageBoxInformation(title="Options", message=str(ret))
+        else:
+            self.parent.messageBoxCritical(title="Options", message="You can't do that.")
+
+        ret, status = self.parent.optionsDialog(
+            mode="multiple", prompt="Multiple selection mode:", options=["1", "2", "3"])
+
+        if status:
+            self.parent.messageBoxInformation(title="Options", message=str(ret))
+        else:
+            self.parent.messageBoxCritical(title="Options", message="You can't do that.")
 # ==============================================================================
     def about(self) -> str:
 
