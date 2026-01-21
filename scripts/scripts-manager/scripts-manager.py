@@ -51,11 +51,29 @@ import pathlib
 import importlib
 from traceback import format_exc
 
-from PySide.QtGui import *
-from PySide.QtCore import *
+try:
+    import FreeCAD
+    import FreeCADGui
+    IN_FREECAD = True
+except ImportError:
+    IN_FREECAD = False
 
-import FreeCAD
-import FreeCADGui
+if IN_FREECAD:
+    from PySide.QtCore import Qt, QCoreApplication, QThread, QMetaObject, QSize, QRect
+    from PySide.QtGui import QColor, QAction
+
+    from PySide.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QColorDialog, \
+        QApplication, QSizePolicy, QWidget, QListWidget, QTabWidget, QPushButton, QLabel, QCheckBox, QTextEdit, \
+        QStatusBar, QAbstractItemView
+else:
+    # For the type checker to work correctly.
+
+    from PySide6.QtCore import Qt, QCoreApplication, QThread, QMetaObject, QSize, QRect
+    from PySide6.QtGui import QColor, QAction
+
+    from PySide6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QColorDialog, \
+        QApplication, QSizePolicy, QWidget, QListWidget, QTabWidget, QPushButton, QLabel, QCheckBox, QTextEdit, \
+        QStatusBar, QAbstractItemView
 # ==============================================================================
 __title__ = "Scripts Manager"
 __version__ = "1.3"
@@ -164,7 +182,9 @@ class MacroWindow(QMainWindow):
                                      "to access the Git repository.<br><br>"
                                      "<a href=\"https://github.com/nvdl/FreeCAD\">https://github.com/nvdl/FreeCAD</a>")
 
-            self.ui.txtAbout.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
+            self.ui.txtAbout.setTextInteractionFlags(
+                Qt.TextInteractionFlag.LinksAccessibleByMouse | Qt.TextInteractionFlag.LinksAccessibleByKeyboard)
+
             self.ui.btnClearFilter.setStyleSheet("text-align: left")
             self.ui.lneFilter.setFocus()
             self.chkAlwaysOnTopClicked()
@@ -177,9 +197,9 @@ class MacroWindow(QMainWindow):
             flags = self.windowFlags()
 
             if self.ui.chkAlwaysOnTop.isChecked():
-                self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
+                self.setWindowFlags(flags | Qt.WindowType.WindowStaysOnTopHint)
             else:
-                self.setWindowFlags(flags & (~Qt.WindowStaysOnTopHint))
+                self.setWindowFlags(flags & (~Qt.WindowType.WindowStaysOnTopHint))
 
             self.show()
         except:
@@ -304,29 +324,30 @@ class MacroWindow(QMainWindow):
 # ==============================================================================
     def messageBoxInformation(self, title: str, message: str) -> None:
 
-        QMessageBox.information(self, title, message, QMessageBox.Ok)
+        QMessageBox.information(self, title, message, QMessageBox.StandardButton.Ok)
 # ==============================================================================
     def messageBoxWarning(self, title: str, message: str) -> None:
 
-        QMessageBox.warning(self, title, message, QMessageBox.Ok)
+        QMessageBox.warning(self, title, message, QMessageBox.StandardButton.Ok)
 # ==============================================================================
     def messageBoxCritical(self, title: str, message: str) -> None:
 
-        QMessageBox.critical(self, title, message, QMessageBox.Ok)
+        QMessageBox.critical(self, title, message, QMessageBox.StandardButton.Ok)
 # ==============================================================================
     def messageBoxYesNo(self, title: str, message: str) -> bool:
 
-        ret = (QMessageBox.question(self, title, message, QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes)
+        ret = (QMessageBox.question(self, title, message, QMessageBox.StandardButton.Yes |
+               QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes)
 
         return ret
 # ==============================================================================
-    def inputDialog(self, title: str, message: str, defaultText: str = ""):
+    def inputDialog(self, title: str, message: str, defaultText: str = "") -> tuple[str, bool]:
 
         text, status = QInputDialog.getText(self, title, message, QLineEdit.EchoMode.Normal, defaultText)
 
         return (text, status)
 # ==============================================================================
-    def inputDialogExc(self, title: str, message: str, defaultText: str = ""):
+    def inputDialogExc(self, title: str, message: str, defaultText: str = "") -> str:
 
         text, status = self.inputDialog(title, message, defaultText)
 
@@ -356,7 +377,7 @@ class MacroWindow(QMainWindow):
         color = QColorDialog.getColor(QColor(ir, ig, ib), self, title)
 
         if color.isValid():
-            fr, fg, fb, _ = color.getRgbF()
+            fr, fg, fb, _ = color.getRgbF()  # type: ignore
             status = True
 
         return (fr, fg, fb, status)
@@ -372,13 +393,15 @@ class MacroWindow(QMainWindow):
 # ==============================================================================
     def optionsDialog(self, mode: str, prompt: str, options: list[str]) -> tuple[list[str], bool]:
         """
-        Acceptable value for "mode" are "single" or "multiple".
+        Acceptable values for "mode" are "single" or "multiple".
         """
 
         winOptions = WindowOptions(self, mode, prompt, options)
 
         while winOptions.isVisible():
-            QApplication.instance().processEvents()
+            instance = QApplication.instance()
+            assert instance
+            instance.processEvents()
             QThread.msleep(50)
 
         return winOptions.options()
@@ -388,7 +411,9 @@ class MacroWindow(QMainWindow):
         winOptions = WindowOptions(self, mode, prompt, options)
 
         while winOptions.isVisible():
-            QApplication.instance().processEvents()
+            instance = QApplication.instance()
+            assert instance
+            instance.processEvents()
             QThread.msleep(50)
 
         optionsSelected, statusSelection = winOptions.options()
@@ -511,7 +536,7 @@ class WindowOptions(QMainWindow):
 
     def __init__(self, parent: QMainWindow, mode: str, prompt: str, options: list[str]) -> None:
 
-        super(WindowOptions, self).__init__(parent)
+        super().__init__(parent)
 
         winWidth = parent.width()
         winHeight = parent.height()
@@ -543,12 +568,12 @@ class WindowOptions(QMainWindow):
         self.lstOptions.resize(280, 380)
         self.lstOptions.move(10, 40)
         self.lstOptions.itemDoubleClicked.connect(self.listItemDoubleClicked)
-        self.lstOptions.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.lstOptions.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
         if mode == "single":
-            self.lstOptions.setSelectionMode(QAbstractItemView.SingleSelection)
+            self.lstOptions.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         elif mode == "multiple":
-            self.lstOptions.setSelectionMode(QAbstractItemView.ExtendedSelection)
+            self.lstOptions.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         else:
             assert False, "Wrong mode."
 
