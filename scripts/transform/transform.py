@@ -15,8 +15,8 @@
 *   It supports:                                                          *
 *   - Translation of a single, multiple or a group (FreeCAD group)        *
 *     of objects.                                                         *
-*   - Snapping to center and origin marks (after adding them).            *
-*   - Changing line colors of objects under translation (highlighting).  *
+*   - Snapping to center, origin and grid marks (after adding them).      *
+*   - Changing line colors of objects under translation (highlighting).   *
 *   - Toggling transparencies of all objects (x-ray mode).                *
 *                                                                         *
 ***************************************************************************
@@ -38,12 +38,11 @@
 '''
 # ==================================================================================================
 from dataclasses import dataclass
+from typing import Any
+from traceback import format_exc
 
 from PySide.QtGui import *
 from PySide.QtCore import *
-
-from typing import Any
-from traceback import format_exc
 
 import FreeCAD
 import FreeCADGui
@@ -77,9 +76,9 @@ class ObjectParameters:
 # ==================================================================================================
 class MacroWindow(QMainWindow):
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent: QMainWindow) -> None:
 
-        super(MacroWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.GROUP_LABEL_CENTER_LINES = "lines_center"
         self.GROUP_LABEL_TEMP_CENTER_LINES = "lines_temp_center"
@@ -580,8 +579,9 @@ class MacroWindow(QMainWindow):
             FreeCAD.ActiveDocument.openTransaction()
 
             for objParam in self.selectedObjsParams:
-                objParam.object.Placement = FreeCAD.Placement(FreeCAD.Vector(
-                    0, 0, 0), FreeCAD.Rotation(FreeCAD.Vector(0, 0, 0), 0))
+                objParam.object.Placement = \
+                    FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
+                                      FreeCAD.Rotation(FreeCAD.Vector(0, 0, 0), 0))
 
             FreeCAD.ActiveDocument.commitTransaction()
             FreeCAD.ActiveDocument.recompute()

@@ -76,8 +76,8 @@ else:
         QStatusBar, QAbstractItemView
 # ==============================================================================
 __title__ = "Scripts Manager"
-__version__ = "1.3"
-__date__ = "08/05/2025"
+__version__ = "1.4"
+__date__ = "21/01/2026"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
