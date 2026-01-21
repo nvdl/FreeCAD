@@ -46,17 +46,14 @@ class CustomScript():
             self.parent.statusMessage("No mesh selected.")
             return
 
-        text, status = self.parent.inputDialog(self.modulePath,
-                                               "Please enter tolerance for sewing the shape (default: 0.1).")
-
-        if not status or text == "":
-            self.parent.statusMessage("Cancelled or empty input.")
-            return
-
         try:
+            text = self.parent.inputDialogExc(self.modulePath,
+                                              "Please enter tolerance for sewing the shape.",
+                                              "0.1")
+
             tolerance = float(text)
         except ValueError:
-            self.parent.statusMessage("Invalid input.")
+            self.parent.statusMessage("Canceled or wrong input.")
             return
 
         for obj in objs:
@@ -77,7 +74,6 @@ class CustomScript():
             shape = Part.Solid(newObj.Shape)
 
             newObj2 = FreeCAD.ActiveDocument.addObject("Part::Feature", "tmp_solid_" + obj.Name)
-            newObj2.Label = "Component023 (Solid)"
             newObj2.Shape = shape
 
             del shape
@@ -98,7 +94,7 @@ class CustomScript():
             newObj4 = FreeCAD.ActiveDocument.addObject("Part::Feature", "solid_" + obj.Name)
 
             newObj4.Shape = shape
-            newObj4.Label = "solid-" + obj.Label
+            newObj4.Label = "solid_" + obj.Label
 
             # newObj4.ViewObject.LineColor = obj.ViewObject.LineColor
             # newObj4.ViewObject.LineWidth = obj.ViewObject.LineWidth
