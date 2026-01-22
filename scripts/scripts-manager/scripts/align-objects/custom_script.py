@@ -52,23 +52,23 @@ class CustomScript():
 
         FreeCAD.ActiveDocument.openTransaction()
 
-        centerParent = selObjs[0].Placement.Base
+        baseParent = selObjs[0].Placement.Base
 
         for obj in selObjs[1:]:
-            center = obj.Placement.Base
+            base = obj.Placement.Base
 
-            nx = center[0]
-            ny = center[1]
-            nz = center[2]
+            nx = base[0]
+            ny = base[1]
+            nz = base[2]
 
             if "x" in alignAxes:
-                nx = centerParent[0]
+                nx = baseParent[0]
 
             if "y" in alignAxes:
-                ny = centerParent[1]
+                ny = baseParent[1]
 
             if "z" in alignAxes:
-                nz = centerParent[2]
+                nz = baseParent[2]
 
             obj.Placement.Base = FreeCAD.Vector(nx, ny, nz)
 

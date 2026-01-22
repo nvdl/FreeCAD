@@ -24,6 +24,9 @@
 ***************************************************************************
 '''
 import math
+
+import FreeCAD
+import Part
 # ==============================================================================
 class CustomScript():
 
@@ -37,60 +40,76 @@ class CustomScript():
 
         self.parent.statusMessage(f"Running \"{self.modulePath}\".")
 
-        selObjs = self.common.getSelection(extended=False)
+        selObjsEx = self.common.getSelection(extended=True)
 
-        if len(selObjs) == 0:
-            self.parent.statusMessage("No object selected.")
+        if len(selObjsEx) == 0:
+            self.parent.messageBoxInformation(self.modulePath, ("Please select two features.\n"
+                                                                "A feature can be either a vertex or an edge."))
+
             return
 
-        for obj in selObjs:
-            if obj.TypeId.startswith("Part::") or obj.TypeId.startswith("App::"):
-                boundingBox = obj.Shape.BoundBox
+        obj1 = obj2 = None
 
-            elif obj.TypeId.startswith("Mesh::"):
-                boundingBox = obj.Mesh.BoundBox
+        if len(selObjsEx) == 1:
+            subObjs = selObjsEx[0].SubObjects
 
-            else:
-                self.parent.messageBoxWarning(self.modulePath,
-                                              f"\"{obj.Label}\" with type ID \"{obj.TypeId}\" is not supported.")
+            if len(subObjs) == 2:
+                obj1 = subObjs[0]
+                obj2 = subObjs[1]
 
-                continue
+        elif len(selObjsEx) == 2:
+            subObjs1 = selObjsEx[0].SubObjects
+            subObjs2 = selObjsEx[1].SubObjects
 
-            message = f"Label: {obj.Label}\n"
-            message += f"Name: {obj.Name}\n"
-            message += f"Type ID: {obj.TypeId}\n\n"
+            if len(subObjs1) == 1 and len(subObjs2) == 1:
+                obj1 = subObjs1[0]
+                obj2 = subObjs2[0]
 
-            message += f"X-Length: {boundingBox.XLength}\n"
-            message += f"Y-Length: {boundingBox.YLength}\n"
-            message += f"Z-Length: {boundingBox.ZLength}\n\n"
+        if obj1 is None or obj2 is None:
+            self.parent.statusMessage("Please select two features; vertex or edge.")
+            return
 
-            diagXY = math.hypot(boundingBox.XLength, boundingBox.YLength)
-            diagXZ = math.hypot(boundingBox.XLength, boundingBox.ZLength)
-            diagYZ = math.hypot(boundingBox.YLength, boundingBox.ZLength)
+        p1 = p2 = None
 
-            message += f"XYZ-Diagonal-Length: {boundingBox.DiagonalLength}\n"
-            message += f"XY-Diagonal-Length: {diagXY}\n"
-            message += f"XZ-Diagonal-Length: {diagXZ}\n"
-            message += f"YZ-Diagonal-Length: {diagYZ}\n\n"
+        if type(obj1) is Part.Vertex:
+            p1 = FreeCAD.Vector(obj1.X, obj1.Y, obj1.Z)
+        elif type(obj1) is Part.Edge:
+            p1 = obj1.firstVertex().Point
 
-            message += f"X-Center: {boundingBox.Center.x}\n"
-            message += f"Y-Center: {boundingBox.Center.y}\n"
-            message += f"Z-Center: {boundingBox.Center.z}\n\n"
+        if type(obj2) is Part.Vertex:
+            p2 = FreeCAD.Vector(obj2.X, obj2.Y, obj2.Z)
+        elif type(obj2) is Part.Edge:
+            p2 = obj2.firstVertex().Point
 
-            message += f"X-Min: {boundingBox.XMin}\n"
-            message += f"X-Max: {boundingBox.XMax}\n"
-            message += f"Y-Min: {boundingBox.YMin}\n"
-            message += f"Y-Max: {boundingBox.YMax}\n"
-            message += f"Z-Min: {boundingBox.ZMin}\n"
-            message += f"Z-Max: {boundingBox.ZMax}"
+        if p1 is None or p2 is None:
+            self.parent.statusMessage("Please select two features; vertex or edge.")
+            return
 
-            self.parent.messageBoxInformation(self.modulePath, message)
+        assert p1
+        assert p2
 
-        self.parent.statusMessage(f"Done \"{self.modulePath}\".")
+        dx = p2.x - p1.x
+        dy = p2.y - p1.y
+        dz = p2.z - p1.z
+
+        diagXYZ = math.hypot(dx, dy, dz)
+        diagXY = math.hypot(dx, dy)
+        diagXZ = math.hypot(dx, dz)
+        diagYZ = math.hypot(dy, dz)
+
+        message = f"dX: {dx}\ndY: {dy}\ndZ:{dz}\n\n"
+
+        message += f"XYZ-Diagonal-Length: {diagXYZ}\n"
+        message += f"XY-Diagonal-Length: {diagXY}\n"
+        message += f"XZ-Diagonal-Length: {diagXZ}\n"
+        message += f"YZ-Diagonal-Length: {diagYZ}"
+
+        self.parent.consoleMessage(message)
+        self.parent.messageBoxInformation(self.modulePath, message)
 # ==============================================================================
     def about(self) -> str:
 
-        aboutStr = "Get information about the bounding box."
+        aboutStr = "Measure distances between vertices and edges."
 
         return aboutStr
 # ==============================================================================
