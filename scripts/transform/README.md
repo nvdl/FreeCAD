@@ -14,6 +14,10 @@ It supports:
 ![screenshot-1](doc/images/screenshot-1.png?raw=true "Screenshot 1")
 ![screenshot-2](doc/images/screenshot-2.png?raw=true "Screenshot 2")
 
+## Set transparency of all objects (x-ray mode)
+![screenshot-3](doc/images/screenshot-3.png?raw=true "Screenshot 3")
+![screenshot-4](doc/images/screenshot-4.png?raw=true "Screenshot 4")
+
 # Installation
 Please refer to the official guide for installation of the macro:
 
