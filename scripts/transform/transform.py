@@ -426,15 +426,19 @@ class MacroWindow(QMainWindow):
 
         for objParams in objsParams:
             obj = objParams.object
-            obj.ViewObject.Selectable = False
-            obj.ViewObject.LineWidth = self.markerLineWidth
+            objViewObject = obj.ViewObject
+            objLabel = obj.Label
 
-            if obj.Label == self.LINE_ORIGIN_X_LABEL:
-                obj.ViewObject.LineColor = (1.0, 0.0, 0.0, 0.0)
-            elif obj.Label == self.LINE_ORIGIN_Y_LABEL:
-                obj.ViewObject.LineColor = (0.0, 1.0, 0.0, 0.0)
-            elif obj.Label == self.LINE_ORIGIN_Z_LABEL:
-                obj.ViewObject.LineColor = (0.0, 0.0, 1.0, 0.0)
+            objViewObject.Selectable = False
+            objViewObject.LineWidth = self.markerLineWidth
+            objViewObject.Transparency = 50
+
+            if objLabel == self.LINE_ORIGIN_X_LABEL:
+                objViewObject.LineColor = (1.0, 0.0, 0.0, 0.0)
+            elif objLabel == self.LINE_ORIGIN_Y_LABEL:
+                objViewObject.LineColor = (0.0, 1.0, 0.0, 0.0)
+            elif objLabel == self.LINE_ORIGIN_Z_LABEL:
+                objViewObject.LineColor = (0.0, 0.0, 1.0, 0.0)
 # ==================================================================================================
     def getGroup(self, groupLabel, autoCreate):
 
@@ -779,23 +783,27 @@ class MacroWindow(QMainWindow):
         except:
             QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
-    def btnTransparencyEnableClicked(self):
+    def btnTransparencyEnableClicked(self) -> None:
 
         try:
             self.setTransparencies(self.ui.sldTransparency.value())
         except:
             QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
-    def btnTransparencyDisableClicked(self):
+    def btnTransparencyDisableClicked(self) -> None:
 
         try:
             self.setTransparencies(0)
         except:
             QMessageBox.critical(self, "Exception", format_exc())
 # ==================================================================================================
-    def setTransparencies(self, value):
+    def setTransparencies(self, value: int) -> None:
 
         for obj in FreeCAD.ActiveDocument.Objects:
+            if obj.Label.startswith(self.LINE_CENTER_NAME_PREFIX) or \
+                    obj.Label.startswith(self.LINE_GRID_LABEL_PREFIX):
+                continue
+
             viewObject = obj.ViewObject
 
             if hasattr(viewObject, "Transparency"):
