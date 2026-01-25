@@ -693,11 +693,7 @@ class MacroWindow(QMainWindow):
             newCenterY = center[1] + self.axisYTranslation
             newCenterZ = center[2] + self.axisZTranslation
 
-            snapped = False
-            objSnapLine = None
-            lblSnapLine = None
-            axis = None
-            diff = 0
+            snappedToParams = None
 
             for snapLine in self.snapLinesParams:
                 objSnapLine = snapLine.object
@@ -720,17 +716,32 @@ class MacroWindow(QMainWindow):
 
                 for linePrefix in linePrefixes[axis]:
                     if lblSnapLine.startswith(linePrefix):
-                        if abs(diff) <= self.snapDistance:
-                            snapped = True
-                            break
+                        absDiff = abs(diff)
 
-                if snapped:
-                    break
+                        if absDiff > self.snapDistance:
+                            continue
 
-            if snapped:
-                assert objSnapLine
-                assert lblSnapLine
-                assert axis
+                        betterSnapFound = False
+
+                        if snappedToParams:
+                            if absDiff < snappedToParams["absDiff"]:
+                                betterSnapFound = True
+                        else:
+                            snappedToParams = {}
+                            betterSnapFound = True
+
+                        if betterSnapFound:
+                            snappedToParams["diff"] = diff
+                            snappedToParams["absDiff"] = absDiff
+                            snappedToParams["objSnapLine"] = objSnapLine
+                            snappedToParams["lblSnapLine"] = lblSnapLine
+                            snappedToParams["axis"] = axis
+
+            if snappedToParams:
+                diff = snappedToParams["diff"]
+                objSnapLine = snappedToParams["objSnapLine"]
+                lblSnapLine = snappedToParams["lblSnapLine"]
+                axis = snappedToParams["axis"]
 
                 objSnapLine.ViewObject.LineColor = self.snapLineColor
                 objSnapLine.ViewObject.LineWidth = self.snapLineWidth
@@ -745,6 +756,7 @@ class MacroWindow(QMainWindow):
                 message = f"\"{objParams.object.Label}\" snapped to reference line \"{lblSnapLine}\"."
                 self.ui.statusBar.showMessage(message)
 
+                # Stop when any object snaps to a line.
                 break
 # ==================================================================================================
     def btnOrthographicClicked(self) -> None:
