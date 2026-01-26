@@ -42,7 +42,8 @@ class CustomScript():
                 planeOffset: float,
                 lineColor: tuple[float, float, float],
                 lineWidth: float,
-                lineTransparency: int) -> None:
+                lineTransparency: int,
+                linesSelectable: bool) -> None:
 
         lineHalfLength = planeSize / 2
 
@@ -88,10 +89,12 @@ class CustomScript():
                     line.Z2 = lineHalfLength
                     line.Y1 = line.Y2 = planePos
 
-            line.ViewObject.Selectable = False
-            line.ViewObject.LineColor = lineColor
-            line.ViewObject.LineWidth = lineWidth
-            line.ViewObject.Transparency = lineTransparency
+            lineViewObject = line.ViewObject
+
+            lineViewObject.LineColor = lineColor
+            lineViewObject.LineWidth = lineWidth
+            lineViewObject.Transparency = lineTransparency
+            lineViewObject.Selectable = linesSelectable
 
             self.common.addToGroup((line,), self.GROUP_LABEL_GRID_LINES)
 # ==============================================================================
@@ -127,6 +130,7 @@ class CustomScript():
                                                            "0"))
 
             linesOrigin = self.parent.messageBoxYesNo(self.modulePath, "Draw lines at the origin?")
+            linesSelectable = self.parent.messageBoxYesNo(self.modulePath, "Should the lines be selectable?")
 
         except ValueError:
             self.parent.statusMessage("Canceled or wrong input.")
@@ -146,7 +150,8 @@ class CustomScript():
                          planeOffset,
                          lineColor,
                          lineWidth,
-                         lineTransparency)
+                         lineTransparency,
+                         linesSelectable)
 
         self.parent.statusMessage(f"Done \"{self.modulePath}\".")
 # ==============================================================================
