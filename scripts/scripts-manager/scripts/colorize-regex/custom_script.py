@@ -371,8 +371,22 @@ class CustomScript():
             s = fields[1]
             v = fields[2]
 
-            if h < 0 or h > 100 or s < 0 or s > 100 or v < 0 or v > 100:
-                self.parent.messageBoxCritical(self.modulePath, f"Wrong color value \"{colorStr}\".")
+            if h < 0 or h > 100:
+                self.parent.messageBoxCritical(self.modulePath,
+                                               (f"Wrong hue value in \"{colorStr}\".\n"
+                                                "The correct range is from 0 to 100."))
+                return None
+
+            if s < 0 or s > 100:
+                self.parent.messageBoxCritical(self.modulePath,
+                                               (f"Wrong saturation value in \"{colorStr}\".\n"
+                                                "The correct range is from 0 to 100."))
+                return None
+
+            if v < 0 or v > 100:
+                self.parent.messageBoxCritical(self.modulePath,
+                                               (f"Wrong lightness value in \"{colorStr}\".\n"
+                                                "The correct range is from 0 to 100."))
                 return None
 
             r, g, b = hsv_to_rgb(h / 100.0, s / 100.0, v / 100.0)
