@@ -50,6 +50,7 @@ import sys
 import pathlib
 import importlib
 from traceback import format_exc
+from typing import Any
 
 try:
     import FreeCAD
@@ -95,7 +96,7 @@ class MacroWindow(QMainWindow):
     def __init__(self, parent) -> None:
 
         try:
-            super(MacroWindow, self).__init__(parent)
+            super().__init__(parent)
 
             scriptDir = os.path.dirname(os.path.realpath(__file__))
             # self.consoleMessage(f"{scriptDir=}\n")
@@ -604,18 +605,18 @@ class WindowOptions(QMainWindow):
 
         self.hide()
 # ==============================================================================
-    def btnOKClicked(self):
+    def btnOKClicked(self) -> None:
 
         self.optionsSelected = self.selectedItems()
         self.statusSelection = True
         self.hide()
 # ==============================================================================
-    def btnCancelClicked(self):
+    def btnCancelClicked(self) -> None:
 
         self.statusSelection = False
         self.hide()
 # ==============================================================================
-    def selectedItems(self):
+    def selectedItems(self) -> list[Any]:
 
         return [item.text() for item in self.lstOptions.selectedItems()]
 # ==============================================================================
