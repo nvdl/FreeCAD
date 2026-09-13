@@ -44,15 +44,17 @@ class CustomScript():
             return
 
         for obj in selObjs:
-            if obj.TypeId.startswith("Part::") or obj.TypeId.startswith("App::"):
+            if hasattr(obj, "Shape") and not obj.Shape.isNull():
                 boundingBox = obj.Shape.BoundBox
 
-            elif obj.TypeId.startswith("Mesh::"):
+            elif hasattr(obj, "Mesh") and obj.Mesh.CountFacets > 0:
                 boundingBox = obj.Mesh.BoundBox
 
             else:
-                self.parent.messageBoxWarning(self.modulePath,
-                                              f"\"{obj.Label}\" with type ID \"{obj.TypeId}\" is not supported.")
+                self.parent.messageBoxWarning(
+                    self.modulePath,
+                    f"\"{obj.Label}\" with type ID \"{obj.TypeId}\" is not supported."
+                )
 
                 continue
 
