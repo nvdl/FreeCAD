@@ -344,7 +344,8 @@ class MacroWindow(QMainWindow):
 # ==============================================================================
     def inputDialog(self, title: str, message: str, defaultText: str = "") -> tuple[str, bool]:
 
-        text, status = QInputDialog.getText(self, title, message, QLineEdit.EchoMode.Normal, defaultText)
+        text, status = QInputDialog.getText(
+            self, title, message, QLineEdit.EchoMode.Normal, defaultText)
 
         return (text, status)
 # ==============================================================================
@@ -363,6 +364,18 @@ class MacroWindow(QMainWindow):
     def fileSaveDialog(self, title: str, filters: str):
 
         fName, selectedFilter = QFileDialog.getSaveFileName(self, title, "", filters)
+
+        return (fName, selectedFilter)
+# ==============================================================================
+    def fileOpenDialog(self, title: str, filters: str):
+        """
+        "fName" is an empty string if the user cancels.
+
+        Examples:
+        filters: "Supported files (*.jpg *.png *.gif *.bmp)"
+        """
+
+        fName, selectedFilter = QFileDialog.getOpenFileName(self, title, "", filters)
 
         return (fName, selectedFilter)
 # ==============================================================================
@@ -527,7 +540,8 @@ class Ui_MainWindow(object):
         self.btnClearFilter.setText(QCoreApplication.translate("MainWindow", u"<<<", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tabScripts),
                                 QCoreApplication.translate("MainWindow", u"Scripts", None))
-        self.chkAlwaysOnTop.setText(QCoreApplication.translate("MainWindow", u"Always on top", None))
+        self.chkAlwaysOnTop.setText(QCoreApplication.translate(
+            "MainWindow", u"Always on top", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tabView),
                                 QCoreApplication.translate("MainWindow", u"View", None))
         self.tabMain.setTabText(self.tabMain.indexOf(self.tabAbout),
