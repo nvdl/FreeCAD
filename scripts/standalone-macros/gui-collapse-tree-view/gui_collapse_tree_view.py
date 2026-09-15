@@ -24,7 +24,7 @@
 ***************************************************************************
 '''
 from PySide.QtGui import QMainWindow
-from PySide.QtWidgets import QTreeWidget
+from PySide.QtWidgets import QDockWidget, QTreeView
 
 import FreeCADGui
 # ==============================================================================
@@ -32,11 +32,18 @@ class MacroWindow(QMainWindow):
 
     def __init__(self, parent) -> None:
 
-        super(MacroWindow, self).__init__(parent)
+        super().__init__(parent)
 
         guiMainWindow = FreeCADGui.getMainWindow()
-        trees = guiMainWindow.findChildren(QTreeWidget)
-        trees[0].collapseAll()
+        dockWidgets = guiMainWindow.findChildren(QDockWidget)
+
+        for dock in dockWidgets:
+            if dock.objectName() == "Model":
+                treeViews = dock.findChildren(QTreeView)
+                for tree in treeViews:
+                    if tree.metaObject().className() == "Gui::TreeWidget" and tree.isVisible():
+                        tree.collapseAll()
+                        return
 # ==============================================================================
 macroWindow = MacroWindow(FreeCADGui.getMainWindow())
 # ==============================================================================
