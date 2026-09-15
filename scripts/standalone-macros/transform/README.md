@@ -24,11 +24,16 @@ Please refer to the official guide for installation of the macro:
 https://wiki.freecad.org/How_to_install_macros
 
 # Alternative Installation
-A link to the script in the macros directory of FreeCAD also works.
+A link to the script in the macros directory of FreeCAD works.
 The Git repository can be checked out at a different location.
 
 ```
+# FreeCAD version 1.0.X:
 cd ~/.local/share/FreeCAD/Macro
+
+# FreeCAD version 1.1.X:
+cd ~/.local/share/FreeCAD/v1-1/Macro
+
 ln -rs path/to/git/repository/scripts/transform.py
 ```
 
