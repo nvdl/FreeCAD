@@ -1,4 +1,4 @@
-'''
+"""
 ***************************************************************************
 *                                                                         *
 *   Author:  Naveed Alam                                                  *
@@ -33,12 +33,12 @@
 *   See the GNU Library General Public License for more details.          *
 *                                                                         *
 ***************************************************************************
-'''
+"""
 # ==================================================================================================
 import math
 
-from PySide.QtGui import *
 from PySide.QtCore import *
+from PySide.QtGui import *
 
 import FreeCAD
 import FreeCADGui
@@ -170,7 +170,13 @@ class MacroWindow(QMainWindow):
 # ==================================================================================================
     def translateCamera(self, direction: str) -> None:
 
+        if not (FreeCADGui.ActiveDocument and FreeCADGui.ActiveDocument.ActiveView):
+            return
+
         camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
+
+        if not camera:
+            return
 
         cameraPosition = camera.position.getValue()
         cameraOrientation = camera.orientation.getValue()
@@ -224,8 +230,7 @@ class MacroWindow(QMainWindow):
         if hasattr(camera, "heightAngle"):
             camera.heightAngle.setValue(math.radians(self.heightAngle))
 
-        cameraPosition = FreeCAD.Vector(camera.position.getValue().getValue())
-
+        # cameraPosition = FreeCAD.Vector(camera.position.getValue().getValue())
         # print(camera.orientation.getValue().getValue())
 
         cameraOrientationTuple = camera.orientation.getValue().getValue()
@@ -243,17 +248,13 @@ class MacroWindow(QMainWindow):
         cameraPositionY = int(newCameraPosition.y / step) * step
         cameraPositionZ = int(newCameraPosition.z / step) * step
 
-        self.ui.lblInfo.setText(
-            f"X: {cameraPositionX}\n"
-            f"Y: {cameraPositionY}\n"
-            f"Z: {cameraPositionZ}\n"
-            f"OAngle: {cameraOrientationAngle}\n"
-            f"OAxis: {round(cameraOrientation.Axis.x, 2)}, "
-            f"{round(cameraOrientation.Axis.y, 2)}, "
-            f"{round(cameraOrientation.Axis.z, 2)}"
-        )
-
-        FreeCADGui.updateGui()
+        self.ui.lblInfo.setText(f"X: {cameraPositionX}\n"
+                                f"Y: {cameraPositionY}\n"
+                                f"Z: {cameraPositionZ}\n"
+                                f"OAngle: {cameraOrientationAngle}\n"
+                                f"OAxis: {round(cameraOrientation.Axis.x, 2)}, "
+                                f"{round(cameraOrientation.Axis.y, 2)}, "
+                                f"{round(cameraOrientation.Axis.z, 2)}")
 # ==================================================================================================
     def sldTranslateDeltaChanged(self) -> None:
 
@@ -265,10 +266,10 @@ class MacroWindow(QMainWindow):
         self.heightAngle = self.ui.sldHeightAngle.value()
         self.ui.lblHeightAngle.setText(f"FOV: {self.heightAngle:g}")
 
-        camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
-
-        if hasattr(camera, "heightAngle"):
-            camera.heightAngle.setValue(math.radians(self.heightAngle))
+        if FreeCADGui.ActiveDocument and FreeCADGui.ActiveDocument.ActiveView:
+            camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
+            if camera and hasattr(camera, "heightAngle"):
+                camera.heightAngle.setValue(math.radians(self.heightAngle))
 # ==================================================================================================
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
