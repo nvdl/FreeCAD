@@ -12,11 +12,8 @@
 *                                                                         *
 *   It supports:                                                          *
 *   - Camera's translation.                                               *
-*   - Camera's field (angle) of view (FOV).                               *
-*                                                                         *
-*   Doesn't support yet:                                                  *
 *   - Camera's rotation.                                                  *
-*                                                                         *
+*   - Camera's field (angle) of view (FOV).                               *
 ***************************************************************************
 *                                                                         *
 *   This file is a supplement to the FreeCAD CAx development system.      *
@@ -43,10 +40,11 @@ from PySide.QtGui import *
 import FreeCAD
 import FreeCADGui
 from pivy.coin import SbVec3f
+
 # ==================================================================================================
 __title__ = "CameraControl"
 __version__ = "1.0"
-__date__ = "14/09/2026"
+__date__ = "24/09/2026"
 __author__ = "Naveed Alam"
 __Requires__ = "Freecad 1.0.0"
 __Status__ = "stable"
@@ -69,7 +67,11 @@ class MacroWindow(QMainWindow):
             Qt.Key.Key_A,
             Qt.Key.Key_D,
             Qt.Key.Key_E,
-            Qt.Key.Key_Q
+            Qt.Key.Key_Q,
+            Qt.Key.Key_Left,
+            Qt.Key.Key_Right,
+            Qt.Key.Key_Up,
+            Qt.Key.Key_Down
         )
 
         self.keysMap = {
@@ -78,7 +80,11 @@ class MacroWindow(QMainWindow):
             Qt.Key.Key_A: "left",
             Qt.Key.Key_D: "right",
             Qt.Key.Key_E: "up",
-            Qt.Key.Key_Q: "down"
+            Qt.Key.Key_Q: "down",
+            Qt.Key.Key_Left: "rotate-left",
+            Qt.Key.Key_Right: "rotate-right",
+            Qt.Key.Key_Up: "rotate-up",
+            Qt.Key.Key_Down: "rotate-down"
         }
 
         # Default field-of-view angle.
@@ -140,7 +146,10 @@ class MacroWindow(QMainWindow):
         key = event.key()
 
         if key in self.keysMap:
-            self.translateCamera(self.keysMap[key])
+            if key in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down):
+                self.rotateCamera(self.keysMap[key])
+            else:
+                self.translateCamera(self.keysMap[key])
 
         super().keyReleaseEvent(event)
 # ==================================================================================================
@@ -178,83 +187,89 @@ class MacroWindow(QMainWindow):
         if not camera:
             return
 
-        cameraPosition = camera.position.getValue()
-        cameraOrientation = camera.orientation.getValue()
-
-        # Local forward in camera space is (0, 0, –1).
-        localForward = SbVec3f(0, 0, -1)
-
-        localLeft = SbVec3f(-1, 0, 0)
-        localDown = SbVec3f(0, -1, 0)
-
-        # Rotate by the camera's orientation to get world-space directions.
-        worldForward = cameraOrientation.multVec(localForward)
-        worldLeft = cameraOrientation.multVec(localLeft)
-        worldDown = cameraOrientation.multVec(localDown)
-
-        step = self.deltaTranslation
-
-        if direction in ["forward", "backward"]:
-            x = worldForward.getValue()[0]
-            y = worldForward.getValue()[1]
-            z = worldForward.getValue()[2]
-        elif direction in ["left", "right"]:
-            x = worldLeft.getValue()[0]
-            y = worldLeft.getValue()[1]
-            z = worldLeft.getValue()[2]
-        elif direction in ["up", "down"]:
-            x = worldDown.getValue()[0]
-            y = worldDown.getValue()[1]
-            z = worldDown.getValue()[2]
+        if direction in ("forward", "backward"):
+            # Local forward in camera space is (0, 0, –1).
+            localDir = FreeCAD.Vector(0, 0, -1)
+        elif direction in ("left", "right"):
+            # Local left in camera space is (-1, 0, 0).
+            localDir = FreeCAD.Vector(-1, 0, 0)
+        elif direction in ("up", "down"):
+            # Local down in camera space is (0, -1, 0).
+            localDir = FreeCAD.Vector(0, -1, 0)
         else:
             return
 
-        cameraDirection = FreeCAD.Vector(x, y, z).normalize()
+        # Convert orientation quaternion to "FreeCAD.Rotation".
+        qTuple = camera.orientation.getValue().getValue()
+        cameraRotation = FreeCAD.Rotation(*qTuple)
 
-        if direction in ["forward", "left", "down"]:
-            dx = cameraDirection.x
-            dy = cameraDirection.y
-            dz = cameraDirection.z
-        elif direction in ["backward", "right", "up"]:
-            dx = -cameraDirection.x
-            dy = -cameraDirection.y
-            dz = -cameraDirection.z
-        else:
-            return
+        # Transform camera space to world space and normalize.
+        worldDir = cameraRotation.multVec(localDir).normalize()
 
-        translation = FreeCAD.Vector(dx * step, dy * step, dz * step)
-        newCameraPosition = FreeCAD.Vector(cameraPosition.getValue()) + translation
+        # Invert vector direction for opposite movements.
+        if direction in ("backward", "right", "up"):
+            worldDir = -worldDir
 
-        camera.position.setValue(newCameraPosition)
+        # Calculate translation step.
+        translation = worldDir * self.deltaTranslation
+
+        # Update camera's position.
+        posTuple = camera.position.getValue().getValue()
+        currentPosition = FreeCAD.Vector(*posTuple)
+        newPosition = currentPosition + translation
+
+        camera.position.setValue(newPosition)
 
         if hasattr(camera, "heightAngle"):
             camera.heightAngle.setValue(math.radians(self.heightAngle))
 
-        # cameraPosition = FreeCAD.Vector(camera.position.getValue().getValue())
-        # print(camera.orientation.getValue().getValue())
+        self.updateInfo(camera)
+# ==================================================================================================
+    def rotateCamera(self, direction: str) -> None:
 
-        cameraOrientationTuple = camera.orientation.getValue().getValue()
+        if not (FreeCADGui.ActiveDocument and FreeCADGui.ActiveDocument.ActiveView):
+            return
 
-        cameraOrientation = FreeCAD.Rotation(
-            cameraOrientationTuple[0],
-            cameraOrientationTuple[1],
-            cameraOrientationTuple[2],
-            cameraOrientationTuple[3]
-        )
+        camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
 
-        cameraOrientationAngle = round(math.degrees(cameraOrientation.Angle), 2)
+        if not camera:
+            return
 
-        cameraPositionX = int(newCameraPosition.x / step) * step
-        cameraPositionY = int(newCameraPosition.y / step) * step
-        cameraPositionZ = int(newCameraPosition.z / step) * step
+        step = self.deltaTranslation
 
-        self.ui.lblInfo.setText(f"X: {cameraPositionX}\n"
-                                f"Y: {cameraPositionY}\n"
-                                f"Z: {cameraPositionZ}\n"
-                                f"OAngle: {cameraOrientationAngle}\n"
-                                f"OAxis: {round(cameraOrientation.Axis.x, 2)}, "
-                                f"{round(cameraOrientation.Axis.y, 2)}, "
-                                f"{round(cameraOrientation.Axis.z, 2)}")
+        directionRot = direction.split("-")[1]
+        angleDegrees = step if directionRot in ("left", "up") else -step
+
+        axis = "roll" if directionRot in ("left", "right") else "pitch"
+        useGlobal = (axis == "roll")
+
+        qTuple = camera.orientation.getValue().getValue()
+        currentRotation = FreeCAD.Rotation(*qTuple)
+
+        # Define the rotation axis.
+        if axis == "pitch":
+            baseAxis = FreeCAD.Vector(1, 0, 0)
+        elif axis == "yaw":
+            baseAxis = FreeCAD.Vector(0, 1, 0)
+        elif axis == "roll":
+            baseAxis = FreeCAD.Vector(0, 0, 1)
+        else:
+            return
+
+        # Create incremental rotation around the selected axis.
+        deltaRotation = FreeCAD.Rotation(baseAxis, angleDegrees)
+
+        if useGlobal:
+            # Global frame: Apply rotation on the left side of current orientation.
+            newRotation = deltaRotation.multiply(currentRotation)
+        else:
+            # Local frame: Apply rotation on the right side in camera body space.
+            newRotation = currentRotation.multiply(deltaRotation)
+
+        # Extract quaternion tuple (q0, q1, q2, q3) and assign to the camera node.
+        camera.orientation.setValue(newRotation.Q)
+
+        self.updateInfo(camera)
 # ==================================================================================================
     def sldTranslateDeltaChanged(self) -> None:
 
@@ -270,6 +285,34 @@ class MacroWindow(QMainWindow):
             camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
             if camera and hasattr(camera, "heightAngle"):
                 camera.heightAngle.setValue(math.radians(self.heightAngle))
+# ==================================================================================================
+    def updateInfo(self, camera) -> None:
+
+        cameraPosition = FreeCAD.Vector(camera.position.getValue())
+        step = self.deltaTranslation
+
+        cameraPositionX = int(cameraPosition.x / step) * step
+        cameraPositionY = int(cameraPosition.y / step) * step
+        cameraPositionZ = int(cameraPosition.z / step) * step
+
+        cameraOrientationTuple = camera.orientation.getValue().getValue()
+
+        cameraOrientation = FreeCAD.Rotation(
+            cameraOrientationTuple[0],
+            cameraOrientationTuple[1],
+            cameraOrientationTuple[2],
+            cameraOrientationTuple[3]
+        )
+
+        cameraOrientationAngle = round(math.degrees(cameraOrientation.Angle), 2)
+
+        self.ui.lblInfo.setText(f"X: {cameraPositionX}\n"
+                                f"Y: {cameraPositionY}\n"
+                                f"Z: {cameraPositionZ}\n"
+                                f"OAngle: {cameraOrientationAngle}\n"
+                                f"OAxis: {round(cameraOrientation.Axis.x, 2)}, "
+                                f"{round(cameraOrientation.Axis.y, 2)}, "
+                                f"{round(cameraOrientation.Axis.z, 2)}")
 # ==================================================================================================
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

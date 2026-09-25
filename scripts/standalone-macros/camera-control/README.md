@@ -13,7 +13,13 @@ Key-E: Move up
 
 Key-Q: Move down
 
-Camera rotation is not supported yet.
+Arrow-Key-Left: Rotate left
+
+Arrow-Key-Right: Rotate right
+
+Arrow-Key-Up: Rotate up
+
+Arrow-Key-Down: Rotate down
 
 # Screenshots
 ![screenshot-1](doc/images/screenshot-1.png?raw=true "Screenshot 1")
