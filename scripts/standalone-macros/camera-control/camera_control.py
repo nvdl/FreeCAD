@@ -122,9 +122,10 @@ class MacroWindow(QMainWindow):
         self.ui.btnUp.clicked.connect(self.btnUpClicked)
         self.ui.btnDown.clicked.connect(self.btnDownClicked)
 
-        # styleSheet = "QPushButton {font-size: 12px; min-width: 30px; max-width: 30px;}"
-        # styleSheet = "QPushButton {min-width: 30px; max-width: 30px;}"
-        # self.setStyleSheet(styleSheet)
+        self.ui.btnRotLeft.clicked.connect(self.btnRotLeftClicked)
+        self.ui.btnRotRight.clicked.connect(self.btnRotRightClicked)
+        self.ui.btnRotUp.clicked.connect(self.btnRotUpClicked)
+        self.ui.btnRotDown.clicked.connect(self.btnRotDownClicked)
 
         self.setStyleSheet("""
             QPushButton {
@@ -194,6 +195,22 @@ class MacroWindow(QMainWindow):
     def btnDownClicked(self) -> None:
 
         self.translateCamera("down")
+# ==================================================================================================
+    def btnRotLeftClicked(self) -> None:
+
+        self.rotateCamera("rotate-left")
+# ==================================================================================================
+    def btnRotRightClicked(self) -> None:
+
+        self.rotateCamera("rotate-right")
+# ==================================================================================================
+    def btnRotUpClicked(self) -> None:
+
+        self.rotateCamera("rotate-up")
+# ==================================================================================================
+    def btnRotDownClicked(self) -> None:
+
+        self.rotateCamera("rotate-down")
 # ==================================================================================================
     def translateCamera(self, direction: str) -> None:
 
@@ -267,6 +284,9 @@ class MacroWindow(QMainWindow):
         angleDegrees = step if directionRot in ("left", "up") else -step
 
         axis = "roll" if directionRot in ("left", "right") else "pitch"
+
+        # Ignore orientation of the camera when rotating left or right.
+        # Rotate around the global Z-axis.
         useGlobal = (axis == "roll")
 
         qTuple = camera.orientation.getValue().getValue()
@@ -286,10 +306,10 @@ class MacroWindow(QMainWindow):
         deltaRotation = FreeCAD.Rotation(baseAxis, angleDegrees)
 
         if useGlobal:
-            # Global frame: Apply rotation on the left side of current orientation.
+            # Global space: Apply rotation on the left side of current orientation.
             newRotation = deltaRotation.multiply(currentRotation)
         else:
-            # Local frame: Apply rotation on the right side in camera body space.
+            # Local space: Apply rotation on the right side in camera body space.
             newRotation = currentRotation.multiply(deltaRotation)
 
         # Extract quaternion tuple (q0, q1, q2, q3) and assign to the camera node.
