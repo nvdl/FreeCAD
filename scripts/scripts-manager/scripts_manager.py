@@ -45,10 +45,10 @@
 ***************************************************************************
 '''
 # ==============================================================================
-import os
-import sys
-import pathlib
 import importlib
+import os
+import pathlib
+import sys
 from traceback import format_exc
 from typing import Any
 
@@ -60,27 +60,59 @@ except ImportError:
     IN_FREECAD = False
 
 if IN_FREECAD:
-    from PySide.QtCore import Qt, QCoreApplication, QThread, QMetaObject, QSize, QRect
-    from PySide.QtGui import QColor, QAction
+    from PySide.QtCore import QCoreApplication, QMetaObject, QRect, QSize, Qt, QThread
+    from PySide.QtGui import QAction, QColor
 
-    from PySide.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QColorDialog, \
-        QApplication, QSizePolicy, QWidget, QListWidget, QTabWidget, QPushButton, QLabel, QCheckBox, QTextEdit, \
-        QStatusBar, QAbstractItemView
+    from PySide.QtWidgets import (
+        QAbstractItemView,
+        QApplication,
+        QCheckBox,
+        QColorDialog,
+        QFileDialog,
+        QInputDialog,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QMainWindow,
+        QMessageBox,
+        QPushButton,
+        QSizePolicy,
+        QStatusBar,
+        QTabWidget,
+        QTextEdit,
+        QWidget,
+    )
 else:
     # For the type checker to work correctly.
 
-    from PySide6.QtCore import Qt, QCoreApplication, QThread, QMetaObject, QSize, QRect
-    from PySide6.QtGui import QColor, QAction
+    from PySide6.QtCore import QCoreApplication, QMetaObject, QRect, QSize, Qt, QThread
+    from PySide6.QtGui import QAction, QColor
 
-    from PySide6.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QColorDialog, \
-        QApplication, QSizePolicy, QWidget, QListWidget, QTabWidget, QPushButton, QLabel, QCheckBox, QTextEdit, \
-        QStatusBar, QAbstractItemView
+    from PySide6.QtWidgets import (
+        QAbstractItemView,
+        QApplication,
+        QCheckBox,
+        QColorDialog,
+        QFileDialog,
+        QInputDialog,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QMainWindow,
+        QMessageBox,
+        QPushButton,
+        QSizePolicy,
+        QStatusBar,
+        QTabWidget,
+        QTextEdit,
+        QWidget,
+    )
 # ==============================================================================
 __title__ = "Scripts Manager"
 __version__ = "1.4"
 __date__ = "21/01/2026"
 __author__ = "Naveed Alam"
-__Requires__ = "Freecad 1.0.0"
+__Requires__ = "Freecad 1.1.0"
 __Status__ = "stable"
 __Comment__ = "This macro manages other scripts."
 __url__ = "http://www.freecadweb.org/"
