@@ -69,19 +69,6 @@ class MacroWindow(QMainWindow):
 
     def __init__(self, parent=None) -> None:
 
-        self.consumeKeys = (
-            Qt.Key.Key_W,
-            Qt.Key.Key_S,
-            Qt.Key.Key_A,
-            Qt.Key.Key_D,
-            Qt.Key.Key_E,
-            Qt.Key.Key_Q,
-            Qt.Key.Key_Left,
-            Qt.Key.Key_Right,
-            Qt.Key.Key_Up,
-            Qt.Key.Key_Down
-        )
-
         self.keysMap = {
             Qt.Key.Key_W: "forward",
             Qt.Key.Key_S: "backward",
@@ -137,6 +124,10 @@ class MacroWindow(QMainWindow):
             }
         """)
 
+        self.ui.chkXYRestricted.setToolTip(
+            "Move the camera in a way that its Z-position remains unchanged."
+        )
+
         # Synchronize the labels.
         self.sldTranslateDeltaChanged()
         self.sldHeightAngleChanged()
@@ -158,7 +149,7 @@ class MacroWindow(QMainWindow):
 
         # Consume the event.
         return obj in (self.ui.sldTranslateDelta, self.ui.sldHeightAngle) and \
-            (event.type() is QEvent.Type.KeyPress) and (event.key() in self.consumeKeys)
+            (event.type() is QEvent.Type.KeyPress) and (event.key() in self.keysMap)
 # ==================================================================================================
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
 
