@@ -28,7 +28,7 @@ import FreeCADGui
 import Draft
 import Part
 # ==============================================================================
-class CustomScript():
+class CustomScript:
 
     def __init__(self, parent, modulePath) -> None:
 
@@ -79,7 +79,8 @@ class CustomScript():
             self.parent.statusMessage("Please select two parts; edge or vertex.")
             return
 
-        selection, status = self.parent.optionsDialog("single", "Please select axis of the dimension.", ["X", "Y", "Z"])
+        selection, status = self.parent.optionsDialog(
+            "single", "Please select axis of the dimension.", ["X", "Y", "Z"])
 
         if not status:
             return
@@ -113,21 +114,22 @@ class CustomScript():
         self.parent.statusMessage(f"Done \"{self.modulePath}\".")
 # ==============================================================================
     @staticmethod
-    def defaults(dimensionView):
+    def defaults(dimensionView) -> None:
         """
         Default parameters to use for a new dimension.
         """
 
         dimensionView.FontName = "CommitMono"
-        dimensionView.FontSize = 0.5
+        dimensionView.FontSize = 5
         dimensionView.TextColor = (0, 0, 0)
         dimensionView.TextSpacing = 0.1
         dimensionView.LineColor = (0, 0, 0)
         dimensionView.LineWidth = 3
         dimensionView.Decimals = 0
         dimensionView.ShowUnit = False
-        dimensionView.ArrowType = "Arrow"
-        dimensionView.ScaleMultiplier = 10
+        dimensionView.ArrowTypeStart = "Arrow"
+        dimensionView.ArrowTypeEnd = "Arrow"
+        dimensionView.ScaleMultiplier = 1
 # ==============================================================================
     def about(self) -> str:
 
