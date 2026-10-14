@@ -49,7 +49,9 @@ import importlib
 import os
 import pathlib
 import sys
-from traceback import format_exc
+import traceback
+from collections import defaultdict
+from traceback import TracebackException, format_exc
 from typing import Any
 
 try:
@@ -62,7 +64,6 @@ except ImportError:
 if IN_FREECAD:
     from PySide.QtCore import QCoreApplication, QMetaObject, QRect, QSize, Qt, QThread
     from PySide.QtGui import QAction, QColor
-
     from PySide.QtWidgets import (
         QAbstractItemView,
         QApplication,
@@ -84,10 +85,8 @@ if IN_FREECAD:
     )
 else:
     # For the type checker to work correctly.
-
     from PySide6.QtCore import QCoreApplication, QMetaObject, QRect, QSize, Qt, QThread
     from PySide6.QtGui import QAction, QColor
-
     from PySide6.QtWidgets import (
         QAbstractItemView,
         QApplication,
@@ -306,7 +305,7 @@ class MacroWindow(QMainWindow):
             try:
                 importedScript.run()
             except:
-                self.messageBoxInformation(f"Exception in script: {name}", format_exc())
+                self.showException(name)
 
             self.ui.btnRunScript.setStyleSheet("")
             self.ui.btnRunScript.repaint()
@@ -487,6 +486,41 @@ class MacroWindow(QMainWindow):
     def consoleError(message) -> None:
 
         FreeCAD.Console.PrintError(f"ScriptsManager: {message}\n")
+# ==============================================================================
+    def showException(self, scriptName) -> None:
+
+        caughtException = sys.exception()
+
+        if caughtException is None:
+            return
+
+        tracebackFrames = traceback.extract_tb(sys.exc_info()[2])
+
+        framesByFile: dict[str, list[traceback.FrameSummary]] = \
+            defaultdict(list)
+
+        for frame in tracebackFrames:
+            framesByFile[frame.filename].append(frame)
+
+        msg = ""
+
+        for filename, frames in framesByFile.items():
+            msg += f"{filename}\n"
+
+            for frame in frames:
+                msg += f"Line {frame.lineno}: {frame.name}\n"
+
+                if frame.line:
+                    msg += f"  {frame.line}\n"
+
+            msg += "\n"
+
+        exception: TracebackException = \
+            traceback.TracebackException.from_exception(caughtException)
+
+        msg += "\n".join(exception.format_exception_only())
+
+        self.messageBoxInformation(f"Exception in script: {scriptName}", msg)
 # ==============================================================================
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
