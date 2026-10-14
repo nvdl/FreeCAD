@@ -50,32 +50,35 @@ class CustomScript():
 
             self.parent.statusMessage(f"{selObj.SubObjects}")
 
-            for selObj2 in selObj.SubObjects:
-                if type(selObj2) is Part.Vertex:
-                    message = "Type: vertex\n\n"
-                    message += f"Position: ({selObj2.X}, {selObj2.Y}, {selObj2.Z})"
+            for name, subObject in zip(
+                selObj.SubElementNames,
+                selObj.SubObjects,
+            ):
+                if type(subObject) is Part.Vertex:
+                    message = "Type: Vertex\n"
+                    message += f"Name: {name}\n"
+                    message += f"Position: ({subObject.X}, {subObject.Y}, {subObject.Z})"
 
-                elif type(selObj2) is Part.Edge:
-                    message = "Type: edge\n\n"
-                    message += "Edge "
-                    message += f"length: {selObj2.Length}\n\n"
+                elif type(subObject) is Part.Edge:
+                    message = "Type: Edge\n"
+                    message += f"Name: {name}\n"
+                    message += f"Length: {subObject.Length}\n\n"
 
-                    vertices = selObj2.Vertexes
+                    vertices = subObject.Vertexes
 
                     for i, vertex in enumerate(vertices):
                         message += f"Vertex {i + 1} position: ({vertex.X}, {vertex.Y}, {vertex.Z})\n"
 
-                elif type(selObj2) is Part.Face:
-                    message = "Type: face\n\n"
-                    message += "Parameter "
-                    message += f"length: {selObj2.Length}\n\n"
+                elif type(subObject) is Part.Face:
+                    message = "Type: Face\n"
+                    message += f"Name: {name}\n"
+                    message += f"Parameter length: {subObject.Length}\n"
+                    message += f"Area: {subObject.Area}\n\n"
 
-                    edges = selObj2.Edges
+                    edges = subObject.Edges
 
                     for i, edge in enumerate(edges):
                         message += f"Edge {i + 1} length: {edge.Length}\n"
-
-                    message += f"\nArea: {selObj2.Area}"
 
                 else:
                     assert False
