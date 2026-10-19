@@ -23,12 +23,13 @@
 *                                                                         *
 ***************************************************************************
 '''
+from PIL import Image
+from PySide import QtWidgets
+
 import FreeCAD
 import FreeCADGui
-
-from PySide import QtWidgets
 # ==============================================================================
-class CustomScript():
+class CustomScript:
 
     def __init__(self, parent, modulePath) -> None:
 
@@ -56,7 +57,11 @@ class CustomScript():
 
         # filters = "PNG images (*.png);;JPG images (*.jpg)"
         filters = "PNG images (*.png)"
-        fName, selectedFilter = self.parent.fileSaveDialog("Please specify the destination file.", filters)
+
+        fName, selectedFilter = self.parent.fileSaveDialog(
+            "Please specify the destination file.",
+            filters
+        )
 
         if fName == "":
             self.parent.statusMessage(f"\"{self.modulePath}\": Canceled.")
@@ -65,8 +70,19 @@ class CustomScript():
         if not fName.endswith(".png"):
             fName = f"{fName}.png"
 
+        padding = -1
+
         # From the 3D view.
         if str(activeView) == "View3DInventor":
+            text, status = self.parent.inputDialog(
+                self.modulePath, "Please specify the padding (-1: Skip):", "-1"
+            )
+
+            if not status:
+                return
+
+            padding = int(text)
+
             backgroundColor = self.parent.optionsDialogExc("single",
                                                            "Background color:",
                                                            ["Transparent",
@@ -85,7 +101,12 @@ class CustomScript():
                 backgroundColor = f"#{r:02x}{g:02x}{b:02x}"
 
             sizex, sizey = activeView.getSize()
-            activeView.saveImage(fName, sizex, sizey, backgroundColor)
+
+            if padding == -1:
+                activeView.saveImage(fName, sizex, sizey, backgroundColor)
+            else:
+                activeView.saveImage(fName, sizex, sizey, "Transparent")
+                self.crop(fName, padding, backgroundColor)
 
         # From the "TechDraw" view.
         elif str(activeView) == "MDI view page":
@@ -106,6 +127,39 @@ class CustomScript():
             return
 
         self.parent.statusMessage(f"Done \"{self.modulePath}\".")
+# ==============================================================================
+    def crop(self, fName: str, padding: int, backgroundColor: str) -> None:
+
+        with Image.open(fName) as img:
+            if "A" not in img.getbands():
+                self.parent.statusMessage(f"Padding failed: \"{self.modulePath}\".")
+                return
+
+            bbox = img.getchannel("A").getbbox()
+
+            if bbox is None:
+                self.parent.statusMessage(f"Padding failed: \"{self.modulePath}\".")
+                return
+
+            left, upper, right, lower = bbox
+            imgCropped = img.crop((left, upper, right, lower))
+
+            paddedSize = (
+                imgCropped.size[0] + (padding * 2),
+                imgCropped.size[1] + (padding * 2)
+            )
+
+            namesToValues = {
+                "Transparent": "#00000000",
+                "Black": "#000000ff",
+                "White": "#ffffffff"
+            }
+
+            backgroundColor = namesToValues.get(backgroundColor, backgroundColor)
+
+            imgBackground = Image.new("RGBA", paddedSize, backgroundColor)
+            imgBackground.paste(imgCropped, (padding, padding), imgCropped)
+            imgBackground.save(fName)
 # ==============================================================================
     def about(self) -> str:
 
