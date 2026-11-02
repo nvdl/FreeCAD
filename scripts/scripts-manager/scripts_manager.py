@@ -488,35 +488,24 @@ class MacroWindow(QMainWindow):
         FreeCAD.Console.PrintError(f"ScriptsManager: {message}\n")
 # ==============================================================================
     def showException(self, scriptName) -> None:
-
         caughtException = sys.exception()
 
         if caughtException is None:
             return
 
         tracebackFrames = traceback.extract_tb(sys.exc_info()[2])
-
-        framesByFile: dict[str, list[traceback.FrameSummary]] = \
-            defaultdict(list)
-
-        for frame in tracebackFrames:
-            framesByFile[frame.filename].append(frame)
-
         msg = ""
 
-        for filename, frames in framesByFile.items():
-            msg += f"{filename}\n"
+        for frame in tracebackFrames:
+            msg += f"{frame.filename}\n"
+            msg += f"Line {frame.lineno}: {frame.name}\n"
 
-            for frame in frames:
-                msg += f"Line {frame.lineno}: {frame.name}\n"
-
-                if frame.line:
-                    msg += f"  {frame.line}\n"
+            if frame.line:
+                msg += f">  {frame.line}\n"
 
             msg += "\n"
 
-        exception: TracebackException = \
-            traceback.TracebackException.from_exception(caughtException)
+        exception = traceback.TracebackException.from_exception(caughtException)
 
         msg += "\n".join(exception.format_exception_only())
 
